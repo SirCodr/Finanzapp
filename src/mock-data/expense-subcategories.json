@@ -1,0 +1,12 @@
+[
+  { "id": 1, "name": "Frutas y Verduras", "categoryId": 1 },
+  { "id": 2, "name": "Restaurantes", "categoryId": 1 },
+  { "id": 3, "name": "Gasolina", "categoryId": 2 },
+  { "id": 4, "name": "Transporte público", "categoryId": 2 },
+  { "id": 5, "name": "Cine", "categoryId": 3 },
+  { "id": 6, "name": "Parques de atracciones", "categoryId": 3 },
+  { "id": 7, "name": "Electricidad", "categoryId": 4 },
+  { "id": 8, "name": "Agua", "categoryId": 4 },
+  { "id": 9, "name": "Alquiler", "categoryId": 5 },
+  { "id": 10, "name": "Mantenimiento del hogar", "categoryId": 5 }
+]

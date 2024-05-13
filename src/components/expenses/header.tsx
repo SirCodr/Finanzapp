@@ -17,7 +17,7 @@ const ExpensesHeader = () => {
   return (
     <div className="flex justify-end w-full">
       <Button label="Add+" onClick={showModal} />
-      <Dialog header='Add Expense' visible={isModalVisible} onHide={hideModal}>
+      <Dialog header='Add Expense' visible={isModalVisible} onHide={hideModal} draggable={false}>
         <ExpensesAddForm onSuccess={hideModal} />
       </Dialog>
     </div>

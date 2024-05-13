@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { Expense } from "../types/expenses"
+import { getCurrentDate } from "../utils/date"
 
 const DEFAULT_EXPENSE_STATE: Expense = {
   category: '',
@@ -7,7 +8,7 @@ const DEFAULT_EXPENSE_STATE: Expense = {
   description: '',
   paymentMethod: '',
   tags: [],
-  date: '',
+  date: getCurrentDate(),
   price: ''
 }
 

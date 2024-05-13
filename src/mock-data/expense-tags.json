@@ -1,0 +1,12 @@
+[
+  { "id": 1, "name": "Comida" },
+  { "id": 2, "name": "Transporte" },
+  { "id": 3, "name": "Entretenimiento" },
+  { "id": 4, "name": "Facturas" },
+  { "id": 5, "name": "Ropa" },
+  { "id": 6, "name": "Salud" },
+  { "id": 7, "name": "Educación" },
+  { "id": 8, "name": "Hogar" },
+  { "id": 9, "name": "Viajes" },
+  { "id": 10, "name": "Ocio" }
+]
