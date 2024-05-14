@@ -1,9 +1,16 @@
+import { useEffect } from 'react';
 import ExpensesHeader from '../components/expenses/header';
 import ExpensesListView from '../components/expenses/list-view';
-import useExpensesStore from '../store/expenses';
+import useExpense from '../hooks/use-expense';
 
 function Expenses() {
-  const { expenses } = useExpensesStore()
+  const { expenses, isQueryLoading, getAllExpenses } = useExpense()
+
+  useEffect(() => {
+    getAllExpenses()
+  }, [])
+
+  if (isQueryLoading()) return 'Loading...'
 
   return (
     <div>
