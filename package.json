@@ -10,8 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@types/lodash": "^4.17.1",
     "@types/luxon": "^3.4.2",
     "axios": "^1.6.8",
+    "lodash": "^4.17.21",
     "luxon": "^3.4.4",
     "primeicons": "^7.0.0",
     "primereact": "^10.6.5",
