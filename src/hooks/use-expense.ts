@@ -5,6 +5,7 @@ import { fetchAllExpenses } from "../services/expenses"
 import useExpensesStore from "../store/expenses"
 import { useQuery } from "react-query"
 import { httpResponse } from "../types/http"
+import { snakeArrayToCamel } from "../utils"
 
 const DEFAULT_EXPENSE_STATE: Expense = {
   category: '',
@@ -26,7 +27,9 @@ const useExpense = () => {
     enabled: false,
     onSuccess: (data: httpResponse<Expense[]>) => {
       if (data) {
-        setExpenses(data.data)
+        //TODO: Fix types
+        const formattedData = snakeArrayToCamel(data.data)
+        setExpenses(formattedData)
       }
     }
   })
@@ -37,17 +40,6 @@ const useExpense = () => {
 
   function getAllExpenses() {
     query.refetch()
-  }
-
-  async function getAndSetAllExpenses() {
-    await query.refetch()
-    const { data, error } = query
-
-    if (!error && data?.data) {
-      setExpenses(data.data)
-    } else {
-      throw Error('Expenses could not be fetched')
-    }
   }
 
   function setPropValue<K extends keyof Expense> (prop: K, value: Expense[K]) {
@@ -63,7 +55,6 @@ const useExpense = () => {
       expenses,
       isQueryLoading,
       getAllExpenses,
-      getAndSetAllExpenses,
       setPropValue
     }
   )
