@@ -1,17 +1,19 @@
-import { ExpensesTableColumn } from "../../types/expenses";
+import { ColumnProps } from "primereact/column";
+import { formatCurrency } from "../../utils/currency";
 
-export const RENDER_TABLE_COLUMNS: ExpensesTableColumn[] = [
+export const EXPENSES_TABLE_COLUMNS: ColumnProps[] = [
   {
-    column: 'date'
+    field: 'date'
   },
   {
-    column: 'category'
+    field: 'category'
   },
   {
-    column: 'paymentMethod',
-    text: 'Payment Method'
+    field: 'paymentMethod',
+    header: 'Payment Method'
   },
   {
-    column: 'price'
+    field: 'price',
+    body: ({ price }: { price: string | number }) => formatCurrency(price)
   }
 ]

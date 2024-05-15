@@ -1,6 +1,6 @@
 import { DataTable } from 'primereact/datatable'
 import { Column } from 'primereact/column'
-import { RENDER_TABLE_COLUMNS } from '../../consts/config/expenses';
+import { EXPENSES_TABLE_COLUMNS } from '../../consts/config/expenses';
 import { generateRandomKey } from '../../utils';
 import { Expense } from '../../types/expenses';
 
@@ -14,10 +14,10 @@ function ExpensesListView(props: Props) {
     <div className='card'>
       <DataTable value={props.items} tableStyle={{ minWidth: '50rem' }} scrollable>
         {
-          RENDER_TABLE_COLUMNS.map((item, index) => {
-            const { column, text } = item
+          EXPENSES_TABLE_COLUMNS.map((column, index) => {
+            const { field, header } = column
             return (
-              <Column key={generateRandomKey(index)} field={column} header={text ?? column} headerClassName='capitalize'></Column>
+              <Column key={generateRandomKey(index)} field={field} header={field ?? header} {...column} headerClassName='capitalize'></Column>
             )
           })
         }
