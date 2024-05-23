@@ -1,11 +1,13 @@
 import { Route, Routes } from 'react-router-dom'
-import Expenses from './pages/expenses'
+import ExpensesUploadPage from './pages/expenses/upload'
+import ExpensesPage from './pages/expenses'
 
 function App() {
   return (
     <div className='app'>
       <Routes>
-        <Route path='expenses' element={<Expenses />} />
+        <Route path='expenses' element={<ExpensesPage />} />
+        <Route path='expenses/upload' element={<ExpensesUploadPage />} />
       </Routes>
     </div>
   )

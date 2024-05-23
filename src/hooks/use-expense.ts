@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { Expense } from "../types/expenses"
 import { getCurrentDate } from "../utils/date"
 import { fetchAllExpenses } from "../services/expenses"
@@ -34,13 +34,12 @@ const useExpense = () => {
     }
   })
 
-  function isQueryLoading() {
-    return query.isLoading
-  }
-
-  function getAllExpenses() {
-    query.refetch()
-  }
+  const expensesQuery = useMemo(() => {
+    return {
+      isLoading: query.isLoading,
+      refetch: () => query.refetch()
+    }
+  }, [query])
 
   function setPropValue<K extends keyof Expense> (prop: K, value: Expense[K]) {
     setExpense({
@@ -53,8 +52,7 @@ const useExpense = () => {
     {
       expense,
       expenses,
-      isQueryLoading,
-      getAllExpenses,
+      expensesQuery,
       setPropValue
     }
   )

@@ -14,6 +14,7 @@ const useExpensesStore = create<ExpensesState>()(
     (set) => ({
   expenses: expenseItems,
   setExpenses: (expenses) => set(() => ({ expenses })),
+  setExpenses: (expenses) => set(() => ({ expenses })),
   addExpense: (expense) => set((state) => ({ expenses: [...state.expenses, expense] })),
 })
   )
