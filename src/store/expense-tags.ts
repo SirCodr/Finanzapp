@@ -1,6 +1,5 @@
 import { create } from 'zustand'
 import { Expense } from '../types/expenses'
-import expenseItems from '../mock-data/expenses.json'
 import { devtools } from 'zustand/middleware'
 
 interface ExpenseTags {
@@ -11,7 +10,7 @@ interface ExpenseTags {
 const useExpenseTagsStore = create<ExpenseTags>()(
   devtools(
     (set) => ({
-  tags: expenseItems,
+  tags: [],
   addTags: (tag) => set((state) => ({ tags: [...state.tags, tag] })),
 })
   )
