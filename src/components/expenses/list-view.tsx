@@ -6,13 +6,14 @@ import { Expense } from '../../types/expenses';
 
 interface Props {
   items: Expense[]
+  isLoading?: boolean
 }
 
 function ExpensesListView(props: Props) {
 
   return (
     <div className='card'>
-      <DataTable value={props.items} tableStyle={{ minWidth: '50rem' }} scrollable>
+      <DataTable value={props.items} tableStyle={{ minWidth: '50rem' }} scrollable loading={props.isLoading}>
         {
           EXPENSES_TABLE_COLUMNS.map((column, index) => {
             const { field, header } = column

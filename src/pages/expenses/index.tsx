@@ -13,7 +13,7 @@ function ExpensesPage() {
   return (
     <div>
       <ExpensesHeader />
-      <ExpensesListView items={expenses} />
+      <ExpensesListView items={expenses} isLoading={expensesQuery.isLoading} />
     </div>
   )
 }
