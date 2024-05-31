@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Toast } from 'primereact/toast'
 import {
   FileUpload,
@@ -10,8 +10,11 @@ import {
 import { ProgressBar } from 'primereact/progressbar'
 import { Tooltip } from 'primereact/tooltip'
 import * as XLSX from 'xlsx'
-import { isExpense } from '../../utils'
 import { Expense, ServerExpense } from '../../types/expenses'
+import { fetchAllExpenseCategories } from '../../services/expenses/categories'
+import { fetchAllExpenseSubCategories } from '../../services/expenses/sub_categories'
+import { fetchAllPaymentMethods } from '../../services/payment-methods'
+import useExpense from '../../hooks/use-expense'
 
 interface Props {
   extensionsAccepted: string
@@ -21,44 +24,45 @@ interface Props {
 
 export default function UploadFile(props: Props) {
   const [data, setData] = useState<unknown[]>(null)
+  const [formattedData, setFormmatedData] = useState<ServerExpense[]>([])
   const toast = useRef<Toast>(null)
   const [totalSize, setTotalSize] = useState(0)
   const fileUploadRef = useRef<FileUpload>(null)
+  const { expensesPostMutation } = useExpense()
 
-  function formatUploadData(dataReceived: unknown[]): ServerExpense[] {
+  async function formatUploadData(dataReceived: unknown[]): Promise<ServerExpense[]> {
     if (!dataReceived || !dataReceived.length) throw Error('No hay información recibida')
 
     const firstRow = dataReceived[0]
 
-    if (!isExpense(firstRow)) throw Error('Las columnas no están bien nombradas')
+    //if (!isExpense(firstRow)) throw Error('Las columnas no están bien nombradas')
 
     const expensesDraft: ServerExpense[] = []
-    const foreignData = {
-      'categories': {},
-      'subCategories': {},
-      'tags': {},
-      'paymentMethods': {}
-    }
+
+    const categories = await fetchAllExpenseCategories()
+    const subCategories = await fetchAllExpenseSubCategories()
+    const paymentMethods = await fetchAllPaymentMethods()
 
     for (const expense of (dataReceived as Expense[])) {
-      const { category, subCategory, tags, paymentMethod } = expense
-      if (category && foreignData.categories[category] === undefined) {
-        //query category
-      }
+      const categoryMatch = categories.data.find(category => category.name === expense.category)
+      const subCategoryMatch = subCategories.data.find(subCategory => subCategory.name === expense.subCategory && categoryMatch?.id === subCategory.category_id)
+      const paymentMethodMatch = paymentMethods.data.find(paymentMethod => paymentMethod.name === expense.paymentMethod)
 
-      if (subCategory && foreignData.subCategories[subCategory] === undefined) {
-        //query category
-      }
+      if (!categoryMatch || !categoryMatch.id) continue
 
-      if (tags && foreignData.tags[tags] === undefined) {
-        //query category
-      }
+      if (!paymentMethodMatch || !paymentMethodMatch.id) continue
 
-      if (paymentMethod && foreignData.paymentMethods[paymentMethod] === undefined) {
-        //query category
-      }
+      expensesDraft.push({
+        date: expense.date,
+        category_id: categoryMatch.id,
+        sub_category_id: subCategoryMatch?.id,
+        tags: expense.tags,
+        payment_method_id: paymentMethodMatch.id,
+        price: expense.price
+      })
     }
 
+    setFormmatedData(expensesDraft)
     return expensesDraft
   }
   
@@ -68,7 +72,7 @@ export default function UploadFile(props: Props) {
 
     reader.onload = (event) => {
       const workbook = XLSX.read(event.target.result, { type: 'binary' });
-      const sheetName = workbook.SheetNames[3];
+      const sheetName = workbook.SheetNames[0];
       const sheet = workbook.Sheets[sheetName];
       const sheetData = XLSX.utils.sheet_to_json(sheet);
 
@@ -112,6 +116,11 @@ export default function UploadFile(props: Props) {
 
   function onTemplateClear() {
     setTotalSize(0)
+  }
+
+  async function uploadHandler() {
+    console.log('handler')
+    expensesPostMutation.mutate(formattedData)
   }
 
   const headerTemplate = (options: FileUploadHeaderTemplateOptions) => {
@@ -161,7 +170,6 @@ export default function UploadFile(props: Props) {
             width={100}
           />
         </div>
-        <pre>{JSON.stringify(data, null, 2)}</pre>
       </div>
     )
   }
@@ -206,6 +214,10 @@ export default function UploadFile(props: Props) {
       'custom-cancel-btn p-button-danger p-button-rounded p-button-outlined'
   }
 
+  useEffect(() => {
+    if (data && data.length) formatUploadData(data)
+  }, [data])
+
   return (
     <div>
       <Toast ref={toast}></Toast>
@@ -217,14 +229,16 @@ export default function UploadFile(props: Props) {
       <FileUpload
         ref={fileUploadRef}
         name='demo[]'
-        url='/api/upload'
         multiple
+        mode='basic'
         accept={props.extensionsAccepted}
         maxFileSize={props.maxFileSize}
         onUpload={onTemplateUpload}
         onSelect={onTemplateSelect}
         onError={onTemplateClear}
         onClear={onTemplateClear}
+        customUpload
+        uploadHandler={uploadHandler}
         headerTemplate={headerTemplate}
         itemTemplate={itemTemplate}
         emptyTemplate={emptyTemplate}
