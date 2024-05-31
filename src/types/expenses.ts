@@ -1,7 +1,7 @@
 export interface Expense {
   category: string
   subCategory: string
-  tags: string[]
+  tags: string
   description: string
   paymentMethod: string
   price: string
@@ -22,4 +22,15 @@ export interface ServerExpense {
   price: string
   date: string
   created_at?: string
+}
+
+export interface ServerExpenseCategory {
+  id?: number
+  name: string
+}
+
+export interface ServerExpenseSubCategory {
+  id?: number
+  name: string
+  category_id?: number
 }
