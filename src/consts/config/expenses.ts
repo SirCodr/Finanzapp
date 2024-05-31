@@ -9,6 +9,10 @@ export const EXPENSES_TABLE_COLUMNS: ColumnProps[] = [
     field: 'category'
   },
   {
+    field: 'subCategory',
+    header: 'Sub category'
+  },
+  {
     field: 'paymentMethod',
     header: 'Payment Method'
   },
