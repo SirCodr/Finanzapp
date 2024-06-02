@@ -1,11 +1,12 @@
 import { useMemo, useState } from "react"
-import { Expense } from "../types/expenses"
+import { Expense, ServerExpense } from "../types/expenses"
 import { getCurrentDate } from "../utils/date"
 import { fetchAllExpenses } from "../services/expenses"
 import useExpensesStore from "../store/expenses"
-import { useQuery } from "react-query"
+import { useMutation, useQuery } from "react-query"
 import { httpResponse } from "../types/http"
 import { snakeArrayToCamel } from "../utils"
+import http from "../http"
 
 const DEFAULT_EXPENSE_STATE: Expense = {
   category: '',
@@ -34,12 +35,21 @@ const useExpense = () => {
     }
   })
 
+  const postMutation = useMutation((expenses: ServerExpense[]) => http.post('upload-expenses', expenses))
+
   const expensesQuery = useMemo(() => {
     return {
       isLoading: query.isLoading,
       refetch: () => query.refetch()
     }
   }, [query])
+
+  const expensesPostMutation = useMemo(() => {
+    return {
+      isLoading: postMutation.isLoading,
+      mutate: (expenses: ServerExpense[]) => postMutation.mutate(expenses)
+    }
+  }, [postMutation])
 
   function setPropValue<K extends keyof Expense> (prop: K, value: Expense[K]) {
     setExpense({
@@ -53,6 +63,7 @@ const useExpense = () => {
       expense,
       expenses,
       expensesQuery,
+      expensesPostMutation,
       setPropValue
     }
   )
