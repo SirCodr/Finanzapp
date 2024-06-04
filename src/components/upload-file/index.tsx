@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { Toast } from 'primereact/toast'
 import {
   FileUpload,
@@ -10,11 +10,10 @@ import {
 import { ProgressBar } from 'primereact/progressbar'
 import { Tooltip } from 'primereact/tooltip'
 import * as XLSX from 'xlsx'
-import { Expense, ServerExpense } from '../../types/expenses'
-import { fetchAllExpenseCategories } from '../../services/expenses/categories'
-import { fetchAllExpenseSubCategories } from '../../services/expenses/sub_categories'
-import { fetchAllPaymentMethods } from '../../services/payment-methods'
+import { ServerExpense } from '../../types/expenses'
 import useExpense from '../../hooks/use-expense'
+import { toast } from 'sonner'
+import { ProgressSpinner } from 'primereact/progressspinner'
 
 interface Props {
   extensionsAccepted: string
@@ -23,60 +22,33 @@ interface Props {
 }
 
 export default function UploadFile(props: Props) {
-  const [data, setData] = useState<unknown[]>(null)
-  const [formattedData, setFormmatedData] = useState<ServerExpense[]>([])
-  const toast = useRef<Toast>(null)
   const [totalSize, setTotalSize] = useState(0)
+  const [ data, setData ] = useState<ServerExpense[]>([])
+  const[ isLoading, setLoading ] = useState<boolean>(false)
   const fileUploadRef = useRef<FileUpload>(null)
-  const { expensesPostMutation } = useExpense()
-
-  async function formatUploadData(dataReceived: unknown[]): Promise<ServerExpense[]> {
-    if (!dataReceived || !dataReceived.length) throw Error('No hay información recibida')
-
-    const firstRow = dataReceived[0]
-
-    //if (!isExpense(firstRow)) throw Error('Las columnas no están bien nombradas')
-
-    const expensesDraft: ServerExpense[] = []
-
-    const categories = await fetchAllExpenseCategories()
-    const subCategories = await fetchAllExpenseSubCategories()
-    const paymentMethods = await fetchAllPaymentMethods()
-
-    for (const expense of (dataReceived as Expense[])) {
-      const categoryMatch = categories.data.find(category => category.name === expense.category)
-      const subCategoryMatch = subCategories.data.find(subCategory => subCategory.name === expense.subCategory && categoryMatch?.id === subCategory.category_id)
-      const paymentMethodMatch = paymentMethods.data.find(paymentMethod => paymentMethod.name === expense.paymentMethod)
-
-      if (!categoryMatch || !categoryMatch.id) continue
-
-      if (!paymentMethodMatch || !paymentMethodMatch.id) continue
-
-      expensesDraft.push({
-        date: expense.date,
-        category_id: categoryMatch.id,
-        sub_category_id: subCategoryMatch?.id,
-        tags: expense.tags,
-        payment_method_id: paymentMethodMatch.id,
-        price: expense.price
-      })
-    }
-
-    setFormmatedData(expensesDraft)
-    return expensesDraft
-  }
+  const { expensesPostMutation, formatExpensesForUpload  } = useExpense()
   
-  function handleFileUpload(e: FileUploadSelectEvent) {
+  async function handleFileUpload(e: FileUploadSelectEvent) {
     const file = e.files[0];
     const reader = new FileReader();
 
-    reader.onload = (event) => {
-      const workbook = XLSX.read(event.target.result, { type: 'binary' });
-      const sheetName = workbook.SheetNames[0];
-      const sheet = workbook.Sheets[sheetName];
-      const sheetData = XLSX.utils.sheet_to_json(sheet);
+    reader.onload = async (event) => {
+      try {
+        const workbook = XLSX.read(event.target.result, { type: 'binary' });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const sheetData = XLSX.utils.sheet_to_json(sheet);
 
-      setData(sheetData);
+        setLoading(true)
+        const formattedData = await formatExpensesForUpload(sheetData)
+        setData(formattedData)
+      } catch (error) {
+        console.error(error)
+        toast.error(error)
+        setData([])
+      } finally {
+        setLoading(false)
+      }
     };
 
     reader.readAsBinaryString(file);
@@ -102,11 +74,7 @@ export default function UploadFile(props: Props) {
     })
 
     setTotalSize(_totalSize)
-    toast.current?.show({
-      severity: 'info',
-      summary: 'Success',
-      detail: 'File Uploaded'
-    })
+    toast.success('Datos creados correctamente')
   }
 
   function onTemplateRemove(file: File, callback: () => void) {
@@ -119,8 +87,7 @@ export default function UploadFile(props: Props) {
   }
 
   async function uploadHandler() {
-    console.log('handler')
-    expensesPostMutation.mutate(formattedData)
+    if (data && data.length) expensesPostMutation.mutate(data)
   }
 
   const headerTemplate = (options: FileUploadHeaderTemplateOptions) => {
@@ -157,6 +124,11 @@ export default function UploadFile(props: Props) {
 
   const itemTemplate = (inFile: object, props: ItemTemplateOptions) => {
     const file = inFile as File
+
+    if (isLoading) return (
+      <ProgressSpinner style={{width: '50px', height: '50px'}} strokeWidth="8" fill="var(--surface-ground)" animationDuration=".5s" />
+    )
+
     return (
       <div className='flex align-items-center flex-wrap'>
         <div className='flex flex-col align-items-center' style={{ width: '40%' }}>
@@ -214,14 +186,8 @@ export default function UploadFile(props: Props) {
       'custom-cancel-btn p-button-danger p-button-rounded p-button-outlined'
   }
 
-  useEffect(() => {
-    if (data && data.length) formatUploadData(data)
-  }, [data])
-
   return (
     <div>
-      <Toast ref={toast}></Toast>
-
       <Tooltip target='.custom-choose-btn' content='Choose' position='bottom' />
       <Tooltip target='.custom-upload-btn' content='Upload' position='bottom' />
       <Tooltip target='.custom-cancel-btn' content='Clear' position='bottom' />
@@ -230,7 +196,6 @@ export default function UploadFile(props: Props) {
         ref={fileUploadRef}
         name='demo[]'
         multiple
-        mode='basic'
         accept={props.extensionsAccepted}
         maxFileSize={props.maxFileSize}
         onUpload={onTemplateUpload}
@@ -245,6 +210,7 @@ export default function UploadFile(props: Props) {
         chooseOptions={chooseOptions}
         uploadOptions={uploadOptions}
         cancelOptions={cancelOptions}
+        disabled={isLoading}
       />
     </div>
   )
