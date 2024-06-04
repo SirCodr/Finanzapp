@@ -1,10 +1,8 @@
-import { useRef, useState } from 'react'
-import { Toast } from 'primereact/toast'
+import { useEffect, useRef, useState } from 'react'
 import {
   FileUpload,
   FileUploadHeaderTemplateOptions,
   FileUploadSelectEvent,
-  FileUploadUploadEvent,
   ItemTemplateOptions
 } from 'primereact/fileupload'
 import { ProgressBar } from 'primereact/progressbar'
@@ -14,6 +12,7 @@ import { ServerExpense } from '../../types/expenses'
 import useExpense from '../../hooks/use-expense'
 import { toast } from 'sonner'
 import { ProgressSpinner } from 'primereact/progressspinner'
+import { useNavigate } from 'react-router-dom'
 
 interface Props {
   extensionsAccepted: string
@@ -27,6 +26,7 @@ export default function UploadFile(props: Props) {
   const[ isLoading, setLoading ] = useState<boolean>(false)
   const fileUploadRef = useRef<FileUpload>(null)
   const { expensesPostMutation, formatExpensesForUpload  } = useExpense()
+  const navigate = useNavigate()
   
   async function handleFileUpload(e: FileUploadSelectEvent) {
     const file = e.files[0];
@@ -64,22 +64,6 @@ export default function UploadFile(props: Props) {
 
     setTotalSize(_totalSize)
     handleFileUpload(e)
-  }
-
-  function onTemplateUpload(e: FileUploadUploadEvent) {
-    let _totalSize = 0
-
-    e.files.forEach((file) => {
-      _totalSize += file.size || 0
-    })
-
-    setTotalSize(_totalSize)
-    toast.success('Datos creados correctamente')
-  }
-
-  function onTemplateRemove(file: File, callback: () => void) {
-    setTotalSize(totalSize - file.size)
-    callback()
   }
 
   function onTemplateClear() {
@@ -125,7 +109,7 @@ export default function UploadFile(props: Props) {
   const itemTemplate = (inFile: object, props: ItemTemplateOptions) => {
     const file = inFile as File
 
-    if (isLoading) return (
+    if (isLoading || expensesPostMutation.isLoading) return (
       <ProgressSpinner style={{width: '50px', height: '50px'}} strokeWidth="8" fill="var(--surface-ground)" animationDuration=".5s" />
     )
 
@@ -186,6 +170,16 @@ export default function UploadFile(props: Props) {
       'custom-cancel-btn p-button-danger p-button-rounded p-button-outlined'
   }
 
+  useEffect(() => {
+    if (expensesPostMutation.isSuccess) {
+      toast.success('Datos creados correctamente')
+
+      setTimeout(() => {
+        navigate('/expenses')
+      }, 800)
+    }
+  }, [expensesPostMutation.isSuccess])
+
   return (
     <div>
       <Tooltip target='.custom-choose-btn' content='Choose' position='bottom' />
@@ -198,7 +192,6 @@ export default function UploadFile(props: Props) {
         multiple
         accept={props.extensionsAccepted}
         maxFileSize={props.maxFileSize}
-        onUpload={onTemplateUpload}
         onSelect={onTemplateSelect}
         onError={onTemplateClear}
         onClear={onTemplateClear}
@@ -210,7 +203,7 @@ export default function UploadFile(props: Props) {
         chooseOptions={chooseOptions}
         uploadOptions={uploadOptions}
         cancelOptions={cancelOptions}
-        disabled={isLoading}
+        disabled={isLoading || expensesPostMutation.isLoading || expensesPostMutation.isSuccess}
       />
     </div>
   )

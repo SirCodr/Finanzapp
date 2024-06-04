@@ -50,6 +50,7 @@ const useExpense = () => {
   const expensesPostMutation = useMemo(() => {
     return {
       isLoading: postMutation.isLoading,
+      isSuccess: postMutation.isSuccess,
       mutate: (expenses: ServerExpense[]) => postMutation.mutate(expenses)
     }
   }, [postMutation])
