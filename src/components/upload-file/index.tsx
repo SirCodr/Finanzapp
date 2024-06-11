@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import {
   FileUpload,
   FileUploadHeaderTemplateOptions,
@@ -8,25 +8,22 @@ import {
 import { ProgressBar } from 'primereact/progressbar'
 import { Tooltip } from 'primereact/tooltip'
 import * as XLSX from 'xlsx'
-import { ServerExpense } from '../../types/expenses'
-import useExpense from '../../hooks/use-expense'
 import { toast } from 'sonner'
 import { ProgressSpinner } from 'primereact/progressspinner'
-import { useNavigate } from 'react-router-dom'
 
 interface Props {
   extensionsAccepted: string
   maxFileSize: number
-
+  isLoading: boolean
+  onLoad?: (data: unknown[]) => Promise<void>
+  uploadHandler: (data: unknown[]) => Promise<void>
 }
 
 export default function UploadFile(props: Props) {
   const [totalSize, setTotalSize] = useState(0)
-  const [ data, setData ] = useState<ServerExpense[]>([])
+  const [sheetData, setSheetData] = useState<unknown[]>([])
   const[ isLoading, setLoading ] = useState<boolean>(false)
   const fileUploadRef = useRef<FileUpload>(null)
-  const { expensesPostMutation, formatExpensesForUpload  } = useExpense()
-  const navigate = useNavigate()
   
   async function handleFileUpload(e: FileUploadSelectEvent) {
     const file = e.files[0];
@@ -34,18 +31,18 @@ export default function UploadFile(props: Props) {
 
     reader.onload = async (event) => {
       try {
+        setLoading(true)
         const workbook = XLSX.read(event.target.result, { type: 'binary' });
         const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
-        const sheetData = XLSX.utils.sheet_to_json(sheet);
-
-        setLoading(true)
-        const formattedData = await formatExpensesForUpload(sheetData)
-        setData(formattedData)
+        const data = XLSX.utils.sheet_to_json(sheet);
+        setSheetData(data)
+        
+        if (props.onLoad) await props.onLoad(data)
       } catch (error) {
         console.error(error)
         toast.error(error)
-        setData([])
+        setSheetData([])
       } finally {
         setLoading(false)
       }
@@ -71,7 +68,15 @@ export default function UploadFile(props: Props) {
   }
 
   async function uploadHandler() {
-    if (data && data.length) expensesPostMutation.mutate(data)
+    try {
+      setLoading(true)
+      await props.uploadHandler(sheetData)
+    } catch (error) {
+      console.error(error)
+      toast.error(error)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const headerTemplate = (options: FileUploadHeaderTemplateOptions) => {
@@ -109,7 +114,7 @@ export default function UploadFile(props: Props) {
   const itemTemplate = (inFile: object, props: ItemTemplateOptions) => {
     const file = inFile as File
 
-    if (isLoading || expensesPostMutation.isLoading) return (
+    if (isLoading) return (
       <ProgressSpinner style={{width: '50px', height: '50px'}} strokeWidth="8" fill="var(--surface-ground)" animationDuration=".5s" />
     )
 
@@ -170,16 +175,6 @@ export default function UploadFile(props: Props) {
       'custom-cancel-btn p-button-danger p-button-rounded p-button-outlined'
   }
 
-  useEffect(() => {
-    if (expensesPostMutation.isSuccess) {
-      toast.success('Datos creados correctamente')
-
-      setTimeout(() => {
-        navigate('/expenses')
-      }, 800)
-    }
-  }, [expensesPostMutation.isSuccess])
-
   return (
     <div>
       <Tooltip target='.custom-choose-btn' content='Choose' position='bottom' />
@@ -203,7 +198,7 @@ export default function UploadFile(props: Props) {
         chooseOptions={chooseOptions}
         uploadOptions={uploadOptions}
         cancelOptions={cancelOptions}
-        disabled={isLoading || expensesPostMutation.isLoading || expensesPostMutation.isSuccess}
+        disabled={isLoading}
       />
     </div>
   )
