@@ -15,7 +15,10 @@ const ExpensesHeader = () => {
   }
 
   return (
-    <div className="flex justify-end w-full">
+    <div className="flex justify-end gap-x-6 w-full">
+      <a href="expenses/upload" target="_parent" rel="noopener noreferrer" className="font-bold">
+        Upload
+    </a>
       <Button label="Add+" onClick={showModal} />
       <Dialog header='Add Expense' visible={isModalVisible} onHide={hideModal} draggable={false}>
         <ExpensesAddForm onSuccess={hideModal} />

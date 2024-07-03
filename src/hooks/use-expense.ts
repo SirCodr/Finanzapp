@@ -1,15 +1,16 @@
 import { useMemo, useState } from "react"
-import { Expense, ServerExpense } from "../types/expenses"
+import { Expense, ServerExpense, ServerExpenseCategory, ServerExpenseSubCategory } from "../types/expenses"
 import { getCurrentDate } from "../utils/date"
-import { fetchAllExpenses } from "../services/expenses"
+import { fetchAllExpenses, postExpenses } from "../services/expenses"
 import useExpensesStore from "../store/expenses"
 import { useMutation, useQuery } from "react-query"
 import { httpResponse } from "../types/http"
 import { isExpense, snakeArrayToCamel } from "../utils"
-import http from "../http"
-import { fetchAllExpenseCategories } from "../services/expenses/categories"
+import { fetchAllExpenseCategories, postExpenseCategories } from "../services/expenses/categories"
 import { fetchAllExpenseSubCategories } from "../services/expenses/sub_categories"
-import { fetchAllPaymentMethods } from "../services/payment-methods"
+import { fetchAllPaymentMethods, postPaymentMethods } from "../services/payment-methods"
+import { toast } from "sonner"
+import { ServerPaymentMethod } from "../types/payment-methods"
 
 const DEFAULT_EXPENSE_STATE: Expense = {
   category: '',
@@ -38,7 +39,7 @@ const useExpense = () => {
     }
   })
 
-  const postMutation = useMutation((expenses: ServerExpense[]) => http.post('upload-expenses', expenses))
+  const postMutation = useMutation((expenses: ServerExpense[]) => postExpenses(expenses))
 
   const expensesQuery = useMemo(() => {
     return {
@@ -70,24 +71,66 @@ const useExpense = () => {
     if (!isExpense(firstRow)) throw Error('Las columnas no están bien nombradas')
 
     const expensesDraft: ServerExpense[] = []
+    const pendingExpenses: Expense[] = []
 
     const categories = await fetchAllExpenseCategories()
     const subCategories = await fetchAllExpenseSubCategories()
     const paymentMethods = await fetchAllPaymentMethods()
 
+    const pendingCategories: Set<string> =  new Set<string>()
+    const pendingSubCategories: Set<string> =  new Set<string>()
+    const pendingPaymentMethods: Set<string> =  new Set<string>()
+
     for (const expense of (data as Expense[])) {
-      const categoryMatch = categories.data.find(category => category.name === expense.category)
-      const subCategoryMatch = subCategories.data.find(subCategory => subCategory.name === expense.subCategory && categoryMatch?.id === subCategory.category_id)
-      const paymentMethodMatch = paymentMethods.data.find(paymentMethod => paymentMethod.name === expense.paymentMethod)
+      const formattedExpenseFound = getFormattedExpensesforUpload({
+        rawExpense: expense,
+        serverCategories: categories.data,
+        serverSubcategories: subCategories.data,
+        serverPaymentMethods: paymentMethods.data
+      })
 
-      if (!categoryMatch || !categoryMatch.id) continue
+      if (formattedExpenseFound) {
+        expensesDraft.push(formattedExpenseFound)
+      }
 
-      if (!paymentMethodMatch || !paymentMethodMatch.id) continue
+      if (!categoryMatch && !pendingCategories.has(expense.category)) {
+        pendingCategories.add(expense.category)
+      }
+
+      if (!paymentMethodMatch && !pendingPaymentMethods.has(expense.paymentMethod)) {
+        pendingPaymentMethods.add(expense.paymentMethod)
+      }
+
+      if (!categoryMatch?.id || !paymentMethodMatch?.id) {
+        pendingExpenses.push(expense)
+        continue
+      }
+    }
+
+    if (pendingCategories.size) {
+      const newExpenseCategories = await postExpenseCategories(Array.from(pendingCategories).map(item => ({ name: item })))
+      categories.data = [...categories.data, ...newExpenseCategories.data ]
+    }
+
+    if (pendingPaymentMethods.size) {
+      const newPaymentMethods = await postPaymentMethods(Array.from(pendingPaymentMethods).map(item => ({ name: item })))
+      paymentMethods.data = [...paymentMethods.data, ...newPaymentMethods.data ]
+    }
+
+    for (const expense of pendingExpenses) {
+      const categoryMatch = categories.data.find(category => expense.category.trim().length && category.name === expense.category)
+      const subCategoryMatch = subCategories.data.find(subCategory => expense.subCategory.trim().length && subCategory.name === expense.subCategory && categoryMatch?.id === subCategory.category_id)
+      const paymentMethodMatch = paymentMethods.data.find(paymentMethod =>paymentMethod.name.trim().length && paymentMethod.name === expense.paymentMethod)
+
+      if (!categoryMatch?.id || !paymentMethodMatch?.id) {
+        toast.error('Error')
+        continue
+      }
 
       expensesDraft.push({
         date: expense.date,
         category_id: categoryMatch.id,
-        sub_category_id: subCategoryMatch?.id,
+        sub_category_id: subCategoryMatch?.id || null,
         tags: expense.tags,
         payment_method_id: paymentMethodMatch.id,
         price: expense.price
@@ -95,6 +138,46 @@ const useExpense = () => {
     }
 
     return expensesDraft
+  }
+
+  function getFormattedExpensesforUpload({
+    rawExpense,
+    serverCategories,
+    serverSubcategories,
+    serverPaymentMethods
+  }: {
+    rawExpense: Expense
+    serverCategories: ServerExpenseCategory[]
+    serverSubcategories: ServerExpenseSubCategory[]
+    serverPaymentMethods: ServerPaymentMethod[]
+  }): ServerExpense | null {
+    const categoryMatch = serverCategories.find(
+      (category) =>
+        rawExpense.category.trim().length &&
+        category.name === rawExpense.category
+    )
+    const subCategoryMatch = serverSubcategories.find(
+      (subCategory) =>
+        rawExpense.subCategory.trim().length &&
+        subCategory.name === rawExpense.subCategory &&
+        categoryMatch?.id === subCategory.category_id
+    )
+    const paymentMethodMatch = serverPaymentMethods.find(
+      (paymentMethod) =>
+        paymentMethod.name.trim().length &&
+        paymentMethod.name === rawExpense.paymentMethod
+    )
+
+    if (!categoryMatch?.id || !paymentMethodMatch?.id) return null
+
+    return {
+      date: expense.date,
+      category_id: categoryMatch.id,
+      sub_category_id: subCategoryMatch?.id || null,
+      tags: expense.tags,
+      payment_method_id: paymentMethodMatch.id,
+      price: expense.price
+    }
   }
 
   return (

@@ -14,14 +14,14 @@ export interface ExpensesTableColumn {
 }
 
 export interface ServerExpense {
-  id?: number
-  category_id: number
-  sub_category_id?: number
-  tags?: string
-  payment_method_id: number
-  price: string
-  date: string
-  created_at?: string
+  category_id: number;
+  created_at?: string;
+  date: string;
+  id?: number;
+  payment_method_id: number;
+  price: string;
+  sub_category_id: number | null;
+  tags: string | null;
 }
 
 export interface ServerExpenseCategory {
