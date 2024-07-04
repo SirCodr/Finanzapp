@@ -15,7 +15,3 @@ export function snakeToCamel(obj: any) {
 export function snakeArrayToCamel(array: any[]) {
   return array.map((obj: any) => snakeToCamel(obj));
 }
-
-export function isExpense(expense: unknown): expense is Expense {
-  return (expense as Expense).price !== undefined;
-}

@@ -1,16 +1,11 @@
-export interface Expense {
+export interface LocalExpense {
   category: string
   subCategory: string
-  tags: string
+  tags: string[]
   description: string
   paymentMethod: string
   price: string
   date: string
-}
-
-export interface ExpensesTableColumn {
-  column: keyof Expense
-  text?: string
 }
 
 export interface ServerExpense {
@@ -18,10 +13,16 @@ export interface ServerExpense {
   created_at?: string;
   date: string;
   id?: number;
+  description: string | null;
   payment_method_id: number;
   price: string;
   sub_category_id: number | null;
-  tags: string | null;
+  tags: string;
+}
+
+export interface ExpensesTableColumn {
+  column: keyof LocalExpense
+  text?: string
 }
 
 export interface ServerExpenseCategory {

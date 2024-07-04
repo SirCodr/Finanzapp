@@ -1,8 +1,8 @@
 import http from "../../http";
-import { Expense, ServerExpense } from "../../types/expenses";
+import { LocalExpense, ServerExpense } from "../../types/expenses";
 import { httpResponse } from "../../types/http";
 
-export async function fetchAllExpenses(): Promise<httpResponse<Expense[]>> {
+export async function fetchAllExpensesFromServer(): Promise<httpResponse<LocalExpense[]>> {
   return await http.get('expenses')
 }
 

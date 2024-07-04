@@ -1,64 +1,59 @@
-import { useMemo, useState } from "react"
-import { Expense, ServerExpense, ServerExpenseCategory, ServerExpenseSubCategory } from "../types/expenses"
-import { getCurrentDate } from "../utils/date"
-import { fetchAllExpenses, postExpenses } from "../services/expenses"
+import { useEffect, useState } from "react"
+import { LocalExpense, ServerExpense } from "../types/expenses"
+import { postExpenses } from "../services/expenses"
 import useExpensesStore from "../store/expenses"
 import { useMutation, useQuery } from "react-query"
 import { httpResponse } from "../types/http"
-import { isExpense, snakeArrayToCamel } from "../utils"
+import { snakeArrayToCamel } from "../utils"
 import { fetchAllExpenseCategories, postExpenseCategories } from "../services/expenses/categories"
 import { fetchAllExpenseSubCategories } from "../services/expenses/sub_categories"
 import { fetchAllPaymentMethods, postPaymentMethods } from "../services/payment-methods"
 import { toast } from "sonner"
-import { ServerPaymentMethod } from "../types/payment-methods"
+import { getFormattedExpensesforUpload, isLocalExpense } from "../utils/expenses"
+import { getCurrentDate } from "../utils/date"
 
-const DEFAULT_EXPENSE_STATE: Expense = {
-  category: '',
-  subCategory: '',
-  description: '',
-  paymentMethod: '',
-  tags: [],
+const DEFAULT_SERVER_EXPENSE: ServerExpense = {
+  category_id: 0,
   date: getCurrentDate(),
-  price: ''
+  payment_method_id: 0,
+  price: '',
+  description: '',
+  sub_category_id: null,
+  tags: ""
 }
 
 const useExpense = () => {
-  const [expense, setExpense] = useState<Expense>(DEFAULT_EXPENSE_STATE)
-  const { expenses } = useExpensesStore()
-  const [ setExpenses ]  = useExpensesStore(state => [state.setExpenses])
+  const [serverExpense, setServerExpense] = useState<ServerExpense>(DEFAULT_SERVER_EXPENSE)
+  const [isLoading, setLoading] = useState(false)
+  const { expenses: localExpenses } = useExpensesStore()
+  const [ setLocalExpenses ]  = useExpensesStore(state => [state.setExpenses])
+
   const query = useQuery({
     queryKey: ['expenses'],
     queryFn: fetchAllExpenses,
     enabled: false,
-    onSuccess: (data: httpResponse<Expense[]>) => {
+    onSuccess: (data: httpResponse<LocalExpense[]>) => {
       if (data) {
         //TODO: Fix types
         const formattedData = snakeArrayToCamel(data.data)
-        setExpenses(formattedData)
+        setLocalExpenses(formattedData)
       }
     }
   })
 
-  const postMutation = useMutation((expenses: ServerExpense[]) => postExpenses(expenses))
+  const createMutation = useMutation(async (expenses: ServerExpense[]) => await postExpenses(expenses))
 
-  const expensesQuery = useMemo(() => {
-    return {
-      isLoading: query.isLoading,
-      refetch: () => query.refetch()
-    }
-  }, [query])
+  async function fetchAllExpenses (): Promise<void> {
+    await query.refetch()
+  }
 
-  const expensesPostMutation = useMemo(() => {
-    return {
-      isLoading: postMutation.isLoading,
-      isSuccess: postMutation.isSuccess,
-      mutate: (expenses: ServerExpense[]) => postMutation.mutate(expenses)
-    }
-  }, [postMutation])
+  function createExpenses (expenses: ServerExpense[]) {
+    createMutation.mutate(expenses)
+  }
 
-  function setPropValue<K extends keyof Expense> (prop: K, value: Expense[K]) {
-    setExpense({
-      ...expense,
+  function setPropValue <K extends keyof ServerExpense> (prop: K, value: ServerExpense[K]) {
+    setServerExpense({
+      ...serverExpense,
       [prop]: value
     })
   }
@@ -68,10 +63,10 @@ const useExpense = () => {
 
     const firstRow = data[0]
 
-    if (!isExpense(firstRow)) throw Error('Las columnas no están bien nombradas')
+    if (!isLocalExpense(firstRow)) throw Error('Las columnas no están bien nombradas')
 
     const expensesDraft: ServerExpense[] = []
-    const pendingExpenses: Expense[] = []
+    const pendingExpenses: LocalExpense[] = []
 
     const categories = await fetchAllExpenseCategories()
     const subCategories = await fetchAllExpenseSubCategories()
@@ -81,7 +76,7 @@ const useExpense = () => {
     const pendingSubCategories: Set<string> =  new Set<string>()
     const pendingPaymentMethods: Set<string> =  new Set<string>()
 
-    for (const expense of (data as Expense[])) {
+    for (const expense of (data as LocalExpense[])) {
       const formattedExpenseFound = getFormattedExpensesforUpload({
         rawExpense: expense,
         serverCategories: categories.data,
@@ -128,64 +123,29 @@ const useExpense = () => {
       }
 
       expensesDraft.push({
-        date: expense.date,
+        date: rawExpense.date,
         category_id: categoryMatch.id,
         sub_category_id: subCategoryMatch?.id || null,
-        tags: expense.tags,
+        tags: rawExpense.tags,
         payment_method_id: paymentMethodMatch.id,
-        price: expense.price
+        price: rawExpense.price
       })
     }
 
     return expensesDraft
   }
 
-  function getFormattedExpensesforUpload({
-    rawExpense,
-    serverCategories,
-    serverSubcategories,
-    serverPaymentMethods
-  }: {
-    rawExpense: Expense
-    serverCategories: ServerExpenseCategory[]
-    serverSubcategories: ServerExpenseSubCategory[]
-    serverPaymentMethods: ServerPaymentMethod[]
-  }): ServerExpense | null {
-    const categoryMatch = serverCategories.find(
-      (category) =>
-        rawExpense.category.trim().length &&
-        category.name === rawExpense.category
-    )
-    const subCategoryMatch = serverSubcategories.find(
-      (subCategory) =>
-        rawExpense.subCategory.trim().length &&
-        subCategory.name === rawExpense.subCategory &&
-        categoryMatch?.id === subCategory.category_id
-    )
-    const paymentMethodMatch = serverPaymentMethods.find(
-      (paymentMethod) =>
-        paymentMethod.name.trim().length &&
-        paymentMethod.name === rawExpense.paymentMethod
-    )
-
-    if (!categoryMatch?.id || !paymentMethodMatch?.id) return null
-
-    return {
-      date: expense.date,
-      category_id: categoryMatch.id,
-      sub_category_id: subCategoryMatch?.id || null,
-      tags: expense.tags,
-      payment_method_id: paymentMethodMatch.id,
-      price: expense.price
-    }
-  }
+  useEffect(() => {
+    setLoading(query.isLoading || createMutation.isLoading)
+  }, [query.isLoading, createMutation.isLoading])
 
   return (
     {
-      expense,
-      expenses,
-      expensesQuery,
-      expensesPostMutation,
+      serverExpense,
+      localExpenses,
+      isLoading,
+      fetchAllExpenses,
+      createExpenses,
       setPropValue,
       formatExpensesForUpload
     }
