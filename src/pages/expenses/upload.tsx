@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 
 function ExpensesUploadPage() {
-  const { expensesPostMutation, formatExpensesForUpload  } = useExpense()
+  const { isSuccess, isLoading, createExpenses, formatExpensesForUpload  } = useExpense()
   const navigate = useNavigate()
 
 async function uploadHandler(data: unknown[]) {
@@ -14,25 +14,25 @@ async function uploadHandler(data: unknown[]) {
 
   const formattedData = await formatExpensesForUpload(data)
 
-    if (formattedData  && formattedData.length) expensesPostMutation.mutate(formattedData)
+    if (formattedData  && formattedData.length) createExpenses(formattedData)
   }
 
 useEffect(() => {
-    if (expensesPostMutation.isSuccess) {
+    if (isSuccess) {
       toast.success('Datos creados correctamente')
 
       setTimeout(() => {
         navigate('/expenses')
       }, 800)
     }
-  }, [expensesPostMutation.isSuccess])
+  }, [isSuccess])
 
   return (
     <Layout>
       <UploadFile
         extensionsAccepted=".xlsx, .xls, .csv"
         maxFileSize={100000}
-        isLoading={expensesPostMutation.isLoading || expensesPostMutation.isSuccess}
+        isLoading={isLoading || isSuccess}
         uploadHandler={uploadHandler}
       />
     </Layout>
