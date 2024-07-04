@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { LocalExpense, ServerExpense } from "../types/expenses"
-import { postExpenses } from "../services/expenses"
+import { fetchAllExpensesFromServer, postExpenses } from "../services/expenses"
 import useExpensesStore from "../store/expenses"
 import { useMutation, useQuery } from "react-query"
 import { httpResponse } from "../types/http"
@@ -30,7 +30,7 @@ const useExpense = () => {
 
   const query = useQuery({
     queryKey: ['expenses'],
-    queryFn: fetchAllExpenses,
+    queryFn: fetchAllExpensesFromServer,
     enabled: false,
     onSuccess: (data: httpResponse<LocalExpense[]>) => {
       if (data) {
