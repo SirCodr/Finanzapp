@@ -4,16 +4,16 @@ import ExpensesListView from '../../components/expenses/list-view';
 import useExpense from '../../hooks/use-expense';
 
 function ExpensesPage() {
-  const { expensesQuery, expenses } = useExpense()
+  const { isLoading, fetchAllExpenses, localExpenses } = useExpense()
 
   useEffect(() => {
-    expensesQuery.refetch()
+    fetchAllExpenses()
   }, [])
 
   return (
     <div>
       <ExpensesHeader />
-      <ExpensesListView items={expenses} isLoading={expensesQuery.isLoading} />
+      <ExpensesListView items={localExpenses} isLoading={isLoading} />
     </div>
   )
 }
