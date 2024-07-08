@@ -18,6 +18,7 @@ interface Props {
 const ExpensesAddForm = (props: Props) => {
   const { serverExpense, createExpenses, setPropValue, isLoading } = useExpense()
   const firstInputFocusRef = useRef<Dropdown>(null)
+console.log(serverExpense);
 
   function handleSubmit() {
     createExpenses([serverExpense])
