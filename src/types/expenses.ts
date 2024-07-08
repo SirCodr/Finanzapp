@@ -1,3 +1,5 @@
+import { ServerPaymentMethod } from "./payment-methods"
+
 export interface LocalExpense {
   category: string
   subCategory: string
@@ -17,7 +19,7 @@ export interface ServerExpense {
   payment_method_id: number;
   price: string;
   sub_category_id: number | null;
-  tags: string;
+  tags: string[];
 }
 
 export interface ExpensesTableColumn {
@@ -34,4 +36,10 @@ export interface ServerExpenseSubCategory {
   id?: number
   name: string
   category_id?: number
+}
+
+export interface ExpenseCreationDataRequired {
+  categories: ServerExpenseCategory[]
+  subCategories: ServerExpenseSubCategory[]
+  paymentMethods: ServerPaymentMethod[]
 }

@@ -7,18 +7,14 @@ import { InputNumber } from 'primereact/inputnumber'
 import { InputTextarea } from 'primereact/inputtextarea'
 import { useEffect, useRef } from 'react'
 import useExpense from '../../hooks/use-expense'
-import expenseCategories from '../../mock-data/expense-categories.json'
-import expenseSubCategories from '../../mock-data/expense-subcategories.json'
-import paymentMethods from '../../mock-data/payment-methods.json'
 
 interface Props {
   onSuccess?: () => void
 }
 
 const ExpensesAddForm = (props: Props) => {
-  const { serverExpense, createExpenses, setPropValue, isLoading } = useExpense()
+  const { serverExpense, creationDataRequired, createExpenses, fetchAllCreationDataRequired, setPropValue, isLoading } = useExpense()
   const firstInputFocusRef = useRef<Dropdown>(null)
-console.log(serverExpense);
 
   function handleSubmit() {
     createExpenses([serverExpense])
@@ -27,6 +23,7 @@ console.log(serverExpense);
   }
 
   useEffect(() => {
+    fetchAllCreationDataRequired()
     firstInputFocusRef.current?.focus()
   }, [])
 
@@ -36,7 +33,7 @@ console.log(serverExpense);
         <Dropdown
           value={serverExpense.category_id}
           name='category'
-          options={expenseCategories}
+          options={creationDataRequired?.categories}
           optionLabel='name'
           optionValue='id'
           placeholder='Category'
@@ -45,25 +42,27 @@ console.log(serverExpense);
           filter
           filterInputAutoFocus
           autoFocus
+          loading={isLoading}
         />
         <Dropdown
           value={serverExpense.sub_category_id}
           name='subCategory'
           placeholder='Subcategory'
-          options={expenseSubCategories}
+          options={creationDataRequired?.subCategories}
           optionLabel='name'
           optionValue='id'
           filter
           filterInputAutoFocus
           showClear
           onChange={(e) => setPropValue('sub_category_id', e.value ?? null)}
+          loading={isLoading}
         />
         <Chips
-          value={serverExpense.tags ? JSON.parse(serverExpense.tags) : []}
+          value={serverExpense.tags ?? []}
           name='tags'
           placeholder='Tags'
           separator=','
-          onChange={(e) => setPropValue('tags', JSON.stringify(e.value))}
+          onChange={(e) => setPropValue('tags', e.value ?? [])}
           className='capitalize'
         />
         <InputTextarea
@@ -76,10 +75,11 @@ console.log(serverExpense);
           value={serverExpense.payment_method_id}
           name='paymentMethod'
           placeholder='Payment Method'
-          options={paymentMethods}
+          options={creationDataRequired?.paymentMethods}
           optionLabel='name'
           optionValue='id'
           onChange={(e) => setPropValue('payment_method_id', e.target.value ?? '')}
+          loading={isLoading}
         />
         <InputNumber
           value={Number(serverExpense.price)}

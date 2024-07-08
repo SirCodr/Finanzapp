@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react"
-import { LocalExpense, ServerExpense } from "../types/expenses"
-import { fetchAllExpensesFromServer, postExpenses } from "../services/expenses"
+import { useEffect, useMemo, useState } from "react"
+import { ExpenseCreationDataRequired, LocalExpense, ServerExpense } from "../types/expenses"
+import { fetchAllCreationDataRequiredFromServer, fetchAllExpensesFromServer, postExpenses } from "../services/expenses"
 import useExpensesStore from "../store/expenses"
 import { useMutation, useQuery } from "react-query"
 import { httpResponse } from "../types/http"
@@ -19,7 +19,7 @@ const DEFAULT_SERVER_EXPENSE: ServerExpense = {
   price: '',
   description: '',
   sub_category_id: null,
-  tags: ""
+  tags: []
 }
 
 const useExpense = () => {
@@ -35,11 +35,16 @@ const useExpense = () => {
     enabled: false,
     onSuccess: (data: httpResponse<LocalExpense[]>) => {
       if (data) {
-        //TODO: Fix types
         const formattedData = snakeArrayToCamel(data.data)
         setLocalExpenses(formattedData)
       }
     }
+  })
+
+  const creationDataRequiredQuery = useQuery({
+    queryKey: ['creation-data-required'],
+    queryFn: fetchAllCreationDataRequiredFromServer,
+    enabled: false
   })
 
   const createMutation = useMutation(async (expenses: ServerExpense[]) => await postExpenses(expenses), {
@@ -47,8 +52,14 @@ const useExpense = () => {
     onError: () => setSuccess(false)
   } )
 
+  const creationDataRequired = useMemo(() => creationDataRequiredQuery.data?.data, [creationDataRequiredQuery.data])
+
   async function fetchAllExpenses (): Promise<void> {
     await query.refetch()
+  }
+
+  async function fetchAllCreationDataRequired (): Promise<void> {
+    await creationDataRequiredQuery.refetch()
   }
 
   function createExpenses (expenses: ServerExpense[]) {
@@ -141,16 +152,18 @@ const useExpense = () => {
   }
 
   useEffect(() => {
-    setLoading(query.isLoading || createMutation.isLoading)
-  }, [query.isLoading, createMutation.isLoading])
+    setLoading(query.isLoading || createMutation.isLoading || creationDataRequiredQuery.isLoading)
+  }, [query.isLoading, createMutation.isLoading, creationDataRequiredQuery.isLoading])
 
   return (
     {
       serverExpense,
       localExpenses,
+      creationDataRequired,
       isLoading,
       isSuccess,
       fetchAllExpenses,
+      fetchAllCreationDataRequired,
       createExpenses,
       setPropValue,
       formatExpensesForUpload
