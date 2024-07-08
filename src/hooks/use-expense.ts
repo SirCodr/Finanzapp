@@ -25,6 +25,7 @@ const DEFAULT_SERVER_EXPENSE: ServerExpense = {
 const useExpense = () => {
   const [serverExpense, setServerExpense] = useState<ServerExpense>(DEFAULT_SERVER_EXPENSE)
   const [isLoading, setLoading] = useState(false)
+  const [isSuccess, setSuccess] = useState(false)
   const { expenses: localExpenses } = useExpensesStore()
   const [ setLocalExpenses ]  = useExpensesStore(state => [state.setExpenses])
 
@@ -41,7 +42,10 @@ const useExpense = () => {
     }
   })
 
-  const createMutation = useMutation(async (expenses: ServerExpense[]) => await postExpenses(expenses))
+  const createMutation = useMutation(async (expenses: ServerExpense[]) => await postExpenses(expenses), {
+    onSuccess: () => setSuccess(true),
+    onError: () => setSuccess(false)
+  } )
 
   async function fetchAllExpenses (): Promise<void> {
     await query.refetch()
@@ -88,15 +92,15 @@ const useExpense = () => {
         expensesDraft.push(formattedExpenseFound)
       }
 
-      if (!categoryMatch && !pendingCategories.has(expense.category)) {
+      if (!formattedExpenseFound?.category_id && !pendingCategories.has(expense.category)) {
         pendingCategories.add(expense.category)
       }
 
-      if (!paymentMethodMatch && !pendingPaymentMethods.has(expense.paymentMethod)) {
+      if (!formattedExpenseFound?.payment_method_id && !pendingPaymentMethods.has(expense.paymentMethod)) {
         pendingPaymentMethods.add(expense.paymentMethod)
       }
 
-      if (!categoryMatch?.id || !paymentMethodMatch?.id) {
+      if (!formattedExpenseFound?.category_id || !formattedExpenseFound?.payment_method_id) {
         pendingExpenses.push(expense)
         continue
       }
@@ -123,12 +127,13 @@ const useExpense = () => {
       }
 
       expensesDraft.push({
-        date: rawExpense.date,
+        date: expense.date,
         category_id: categoryMatch.id,
         sub_category_id: subCategoryMatch?.id || null,
-        tags: rawExpense.tags,
+        description: expense.description,
+        tags: JSON.stringify(expense.tags),
         payment_method_id: paymentMethodMatch.id,
-        price: rawExpense.price
+        price: expense.price
       })
     }
 
@@ -144,6 +149,7 @@ const useExpense = () => {
       serverExpense,
       localExpenses,
       isLoading,
+      isSuccess,
       fetchAllExpenses,
       createExpenses,
       setPropValue,
