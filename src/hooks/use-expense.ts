@@ -10,17 +10,7 @@ import { fetchAllExpenseSubCategories } from "../services/expenses/sub_categorie
 import { fetchAllPaymentMethods, postPaymentMethods } from "../services/payment-methods"
 import { toast } from "sonner"
 import { getFormattedExpensesforUpload, isLocalExpense } from "../utils/expenses"
-import { getCurrentDate } from "../utils/date"
-
-const DEFAULT_SERVER_EXPENSE: ServerExpense = {
-  category_id: 0,
-  date: getCurrentDate(),
-  payment_method_id: 0,
-  price: '',
-  description: '',
-  sub_category_id: null,
-  tags: []
-}
+import { DEFAULT_SERVER_EXPENSE } from "../consts"
 
 const useExpense = () => {
   const [serverExpense, setServerExpense] = useState<ServerExpense>(DEFAULT_SERVER_EXPENSE)
