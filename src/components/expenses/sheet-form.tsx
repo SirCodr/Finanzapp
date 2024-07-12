@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import { keyColumn, textColumn } from 'react-datasheet-grid'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { isoDateColumn, keyColumn, textColumn } from 'react-datasheet-grid'
 import 'react-datasheet-grid/dist/style.css'
 import SheetGrid from '../sheet-grid'
 import { ServerExpense } from '../../types/expenses'
@@ -8,11 +8,62 @@ import { DEFAULT_SERVER_EXPENSE } from '../../consts'
 import useExpense from '../../hooks/use-expense'
 import { CellProps } from 'react-datasheet-grid/dist/types'
 import { ProgressSpinner } from 'primereact/progressspinner'
+import { Button } from 'primereact/button'
+import { InputNumber } from 'primereact/inputnumber'
+import { Chips } from 'primereact/chips'
+import { toast } from 'sonner'
+
+const NumberComponent = (props: CellProps<ServerExpense, null>) => {
+  const ref = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (props.active || props.focus) ref.current?.focus()
+  }, [props.active, props.focus])
+
+  return (
+    <InputNumber
+      inputRef={ref}
+      value={Number(props.rowData.price)}
+      name='price'
+      placeholder='Price'
+      locale='en-US'
+      prefix='$'
+      autoFocus={props.active}
+      onChange={(e) =>
+        props.setRowData({
+          ...props.rowData,
+          price: e.value?.toString() ?? ''
+        })
+      }
+    />
+  )
+}
+
+const ChipsComponent = (props: CellProps<ServerExpense, null>) => {
+  const ref = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (props.active || props.focus) ref.current?.focus()
+  }, [props.active, props.focus])
+
+  return (
+    <Chips
+      inputRef={ref}
+      value={props.rowData.tags}
+      name='tags'
+      separator=','
+      onChange={(e) =>
+        props.setRowData({ ...props.rowData, tags: e.value ?? [] })
+      }
+      className='capitalize'
+    />
+  )
+}
 
 const SheetForm = () => {
-  const { fetchAllCreationDataRequired, creationDataRequired, isLoading } = useExpense()
-  const [ data, setData ] = useState<ServerExpense[]>([DEFAULT_SERVER_EXPENSE])
-  
+  const { fetchAllCreationDataRequired, createExpenses, creationDataRequired, isLoading, isSuccess } = useExpense()
+  const [data, setData] = useState<ServerExpense[]>([DEFAULT_SERVER_EXPENSE])
+
   const columns = useMemo(() => {
     return [
       {
@@ -46,12 +97,13 @@ const SheetForm = () => {
         )
       },
       {
-        ...keyColumn('Descripcion', textColumn),
+        ...keyColumn('description', textColumn),
         title: 'Descripcion'
       },
       {
-        ...keyColumn('Etiquetas', textColumn),
-        title: 'Etiquetas'
+        ...keyColumn,
+        title: 'Etiquetas',
+        component: ChipsComponent
       },
       {
         ...keyColumn,
@@ -69,11 +121,12 @@ const SheetForm = () => {
         )
       },
       {
-        ...keyColumn('Valor', textColumn),
-        title: 'Valor'
+        ...keyColumn,
+        title: 'Valor',
+        component: NumberComponent
       },
       {
-        ...keyColumn('Fecha', textColumn),
+        ...keyColumn('date', isoDateColumn),
         title: 'Fecha'
       }
     ]
@@ -83,15 +136,24 @@ const SheetForm = () => {
     fetchAllCreationDataRequired()
   }, [])
 
-  if (isLoading) return <ProgressSpinner style={{width: '50px', height: '50px'}} strokeWidth="8" fill="var(--surface-ground)" animationDuration=".5s" />
+  useEffect(() => {
+    if (isSuccess) {
+      setData([DEFAULT_SERVER_EXPENSE])
+      toast.success('Datos creados exitosamente')
+    }
+  }, [isSuccess])
+
+  if (isLoading) return <ProgressSpinner style={{ width: '50px', height: '50px' }} strokeWidth="8" fill="var(--surface-ground)" animationDuration=".5s" />
 
   return (
     <div className='w-full'>
       <SheetGrid
-      value={data}
-      onChange={setData}
-      columns={columns}
-    />
+        value={data}
+        onChange={setData}
+        columns={columns}
+        createRow={() => DEFAULT_SERVER_EXPENSE}
+      />
+      <Button label='Create' onClick={() => createExpenses(data)} type='button' severity='success' disabled={isLoading} loading={isLoading} className='mt-8' />
     </div>
   )
 }

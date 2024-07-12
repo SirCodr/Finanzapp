@@ -11,7 +11,7 @@ export interface LocalExpense {
 }
 
 export interface ServerExpense {
-  category_id: number;
+  category_id: number | null;
   created_at?: string;
   date: string;
   id?: number;
