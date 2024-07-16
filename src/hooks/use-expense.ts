@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
-import { ExpenseCreationDataRequired, LocalExpense, ServerExpense } from "../types/expenses"
+import { LocalExpense, ServerExpense } from "../types/expenses"
 import { fetchAllCreationDataRequiredFromServer, fetchAllExpensesFromServer, postExpenses } from "../services/expenses"
 import useExpensesStore from "../store/expenses"
 import { useMutation, useQuery } from "react-query"
@@ -78,7 +78,7 @@ const useExpense = () => {
     const paymentMethods = await fetchAllPaymentMethods()
 
     const pendingCategories: Set<string> =  new Set<string>()
-    const pendingSubCategories: Set<string> =  new Set<string>()
+    //const pendingSubCategories: Set<string> =  new Set<string>()
     const pendingPaymentMethods: Set<string> =  new Set<string>()
 
     for (const expense of (data as LocalExpense[])) {
@@ -132,7 +132,7 @@ const useExpense = () => {
         category_id: categoryMatch.id,
         sub_category_id: subCategoryMatch?.id || null,
         description: expense.description,
-        tags: JSON.stringify(expense.tags),
+        tags: expense.tags,
         payment_method_id: paymentMethodMatch.id,
         price: expense.price
       })

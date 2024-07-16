@@ -1,11 +1,11 @@
 import { create } from 'zustand'
-import { Expense } from '../types/expenses'
+import { LocalExpense } from '../types/expenses'
 import { devtools } from 'zustand/middleware'
 
 interface ExpensesState {
-  expenses: Expense[]
-  setExpenses: (expenses: Expense[]) => void,
-  addExpense: (expense: Expense) => void
+  expenses: LocalExpense[]
+  setExpenses: (expenses: LocalExpense[]) => void,
+  addExpense: (expense: LocalExpense) => void
 }
 
 const useExpensesStore = create<ExpensesState>()(

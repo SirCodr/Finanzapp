@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import _ from 'lodash'
-import { Expense } from '../types/expenses';
 
 export function generateRandomKey (index: number) {
   return crypto.randomUUID() + index

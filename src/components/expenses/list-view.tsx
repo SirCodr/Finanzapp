@@ -2,10 +2,10 @@ import { DataTable } from 'primereact/datatable'
 import { Column } from 'primereact/column'
 import { EXPENSES_TABLE_COLUMNS } from '../../consts/config/expenses';
 import { generateRandomKey } from '../../utils';
-import { Expense } from '../../types/expenses';
+import { LocalExpense } from '../../types/expenses';
 
 interface Props {
-  items: Expense[]
+  items: LocalExpense[]
   isLoading?: boolean
 }
 

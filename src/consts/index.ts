@@ -1,5 +1,5 @@
 import { ServerExpense } from "../types/expenses";
-import { getCurrentDate, getCurrentIsoDate } from "../utils/date";
+import { getCurrentIsoDate } from "../utils/date";
 
 export const DEFAULT_SERVER_EXPENSE: ServerExpense = {
   category_id: null,

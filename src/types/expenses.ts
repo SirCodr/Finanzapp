@@ -13,7 +13,7 @@ export interface LocalExpense {
 export interface ServerExpense {
   category_id: number | null;
   created_at?: string;
-  date: string;
+  date: string |null; 
   id?: number;
   description: string | null;
   payment_method_id: number;

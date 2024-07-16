@@ -2,9 +2,7 @@ import { useRef, useState } from 'react'
 import {
   FileUpload,
   FileUploadHeaderTemplateOptions,
-  FileUploadSelectEvent,
-  ItemTemplateOptions
-} from 'primereact/fileupload'
+  FileUploadSelectEvent} from 'primereact/fileupload'
 import { ProgressBar } from 'primereact/progressbar'
 import { Tooltip } from 'primereact/tooltip'
 import * as XLSX from 'xlsx'
@@ -19,6 +17,11 @@ interface Props {
   uploadHandler: (data: unknown[]) => Promise<void>
 }
 
+interface FileWithUrl extends File {
+  objectURL: string;
+}
+
+
 export default function UploadFile(props: Props) {
   const [totalSize, setTotalSize] = useState(0)
   const [sheetData, setSheetData] = useState<unknown[]>([])
@@ -32,7 +35,7 @@ export default function UploadFile(props: Props) {
     reader.onload = async (event) => {
       try {
         setLoading(true)
-        const workbook = XLSX.read(event.target.result, { type: 'binary' });
+        const workbook = XLSX.read(event.target?.result, { type: 'binary' });
         const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
         const data = XLSX.utils.sheet_to_json(sheet);
@@ -40,8 +43,8 @@ export default function UploadFile(props: Props) {
         
         if (props.onLoad) await props.onLoad(data)
       } catch (error) {
+        if (error instanceof Error) toast.error(error.message)
         console.error(error)
-        toast.error(error)
         setSheetData([])
       } finally {
         setLoading(false)
@@ -72,8 +75,8 @@ export default function UploadFile(props: Props) {
       setLoading(true)
       await props.uploadHandler(sheetData)
     } catch (error) {
+      if (error instanceof Error) toast.error(error.message)
       console.error(error)
-      toast.error(error)
     } finally {
       setLoading(false)
     }
@@ -111,8 +114,8 @@ export default function UploadFile(props: Props) {
     )
   }
 
-  const itemTemplate = (inFile: object, props: ItemTemplateOptions) => {
-    const file = inFile as File
+  const itemTemplate = (inFile: object) => {
+    const file = inFile as FileWithUrl 
 
     if (isLoading) return (
       <ProgressSpinner style={{width: '50px', height: '50px'}} strokeWidth="8" fill="var(--surface-ground)" animationDuration=".5s" />

@@ -1,10 +1,10 @@
 import { create } from 'zustand'
-import { Expense } from '../types/expenses'
+import { LocalExpense } from '../types/expenses'
 import { devtools } from 'zustand/middleware'
 
 interface ExpenseTags {
-  tags: Expense[]
-  addTags: (expense: Expense) => void
+  tags: LocalExpense[]
+  addTags: (expense: LocalExpense) => void
 }
 
 const useExpenseTagsStore = create<ExpenseTags>()(

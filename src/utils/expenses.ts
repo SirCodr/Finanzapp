@@ -37,6 +37,7 @@ export function getFormattedExpensesforUpload({
 
     return {
       date: rawExpense.date,
+      description: rawExpense.description,
       category_id: categoryMatch.id,
       sub_category_id: subCategoryMatch?.id || null,
       tags: rawExpense.tags,

@@ -92,7 +92,7 @@ const ExpensesAddForm = (props: Props) => {
           }
         />
         <Calendar
-          value={DateTime.fromISO(serverExpense.date).toJSDate()}
+          value={serverExpense.date ? DateTime.fromISO(serverExpense.date).toJSDate() : null}
           name='date'
           placeholder='Date'
           dateFormat='dd/mm/yy'
