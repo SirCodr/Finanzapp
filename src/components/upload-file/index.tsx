@@ -38,8 +38,9 @@ export default function UploadFile(props: Props) {
         const workbook = XLSX.read(event.target?.result, { type: 'binary' });
         const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
-        const data = XLSX.utils.sheet_to_json(sheet);
-        setSheetData(data)
+        const data = XLSX.utils.sheet_to_json<unknown[]>(sheet, { header: 1 });
+        const filledData = data.filter((item: unknown[]) => item.length)
+        setSheetData(filledData.slice(1))
         
         if (props.onLoad) await props.onLoad(data)
       } catch (error) {
