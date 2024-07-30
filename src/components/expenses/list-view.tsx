@@ -13,7 +13,7 @@ function ExpensesListView(props: Props) {
 
   return (
     <div className='card'>
-      <DataTable value={props.items} tableStyle={{ minWidth: '50rem' }} scrollable loading={props.isLoading}>
+      <DataTable value={props.items} paginator rows={15} tableStyle={{ minWidth: '50rem' }} scrollable loading={props.isLoading}>
         {
           EXPENSES_TABLE_COLUMNS.map((column, index) => {
             const { field, header } = column
