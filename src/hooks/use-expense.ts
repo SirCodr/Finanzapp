@@ -66,10 +66,6 @@ const useExpense = () => {
   async function formatExpensesForUpload(data: unknown[]) {
     if (!data || !data.length) throw Error('No hay información recibida')
 
-    const firstRow = data[0]
-
-    if (!isLocalExpense(firstRow)) throw Error('Las columnas no están bien nombradas')
-
     const expensesDraft: ServerExpense[] = []
     const pendingExpenses: LocalExpense[] = []
 
@@ -81,9 +77,18 @@ const useExpense = () => {
     //const pendingSubCategories: Set<string> =  new Set<string>()
     const pendingPaymentMethods: Set<string> =  new Set<string>()
 
-    for (const expense of (data as LocalExpense[])) {
+    for (const expense of (data as unknown[][])) {
+      const rawExpense = {
+          date: expense[0] as string,
+          category: expense[1] as string,
+          subCategory: expense[2] as string,
+          description: expense[3] as string,
+          tags: (expense[4] as string)?.split(',') || [],
+          paymentMethod: expense[5] as string,
+          price: expense[6] as string
+      }
       const formattedExpenseFound = getFormattedExpensesforUpload({
-        rawExpense: expense,
+        rawExpense,
         serverCategories: categories.data,
         serverSubcategories: subCategories.data,
         serverPaymentMethods: paymentMethods.data
@@ -93,16 +98,16 @@ const useExpense = () => {
         expensesDraft.push(formattedExpenseFound)
       }
 
-      if (!formattedExpenseFound?.category_id && !pendingCategories.has(expense.category)) {
-        pendingCategories.add(expense.category)
+      if (!formattedExpenseFound?.category_id && !pendingCategories.has(rawExpense.category)) {
+        pendingCategories.add(rawExpense.category)
       }
 
-      if (!formattedExpenseFound?.payment_method_id && !pendingPaymentMethods.has(expense.paymentMethod)) {
-        pendingPaymentMethods.add(expense.paymentMethod)
+      if (!formattedExpenseFound?.payment_method_id && !pendingPaymentMethods.has(rawExpense.paymentMethod)) {
+        pendingPaymentMethods.add(rawExpense.paymentMethod)
       }
 
       if (!formattedExpenseFound?.category_id || !formattedExpenseFound?.payment_method_id) {
-        pendingExpenses.push(expense)
+        pendingExpenses.push(rawExpense)
         continue
       }
     }
