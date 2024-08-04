@@ -24,12 +24,14 @@ function ExpensesListView(props: Props) {
 
   const renderHeader = () => {
         return (
-            <div className="flex justify-content-between">
-                <Button type="button" icon="pi pi-filter-slash" label="Clear" outlined onClick={() => setFilter('')} />
-                <IconField iconPosition="left">
-                    <InputIcon className="pi pi-search" />
-                    <InputText value={filter} onChange={onGlobalFilterChange} placeholder="Filtrar datos" />
-                </IconField>
+            <div className="w-full flex justify-end">
+                <section className='flex gap-6'>
+                  <Button type="button" icon="pi pi-filter-slash" label="Clear" outlined onClick={() => setFilter('')} />
+                  <div className='flex items-center gap-x-2'>
+                      <InputIcon className="pi pi-search" />
+                      <InputText value={filter} onChange={onGlobalFilterChange} placeholder="Filtrar datos" type='search' />
+                  </div>
+                </section>
             </div>
         );
     };
