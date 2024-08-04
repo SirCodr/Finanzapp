@@ -3,9 +3,8 @@ import { Column } from 'primereact/column'
 import { EXPENSES_TABLE_COLUMNS } from '../../consts/config/expenses';
 import { generateRandomKey } from '../../utils';
 import { LocalExpense } from '../../types/expenses';
-import { useState } from 'react';
+import { ChangeEvent, ChangeEventHandler, useState } from 'react';
 import { InputText } from 'primereact/inputtext';
-import { IconField } from 'primereact/iconfield';
 import { InputIcon } from 'primereact/inputicon';
 import { Button } from 'primereact/button';
 
@@ -17,7 +16,7 @@ interface Props {
 function ExpensesListView(props: Props) {
   const [filter, setFilter] = useState('')
 
-  const onGlobalFilterChange = (e) => {
+  const onGlobalFilterChange = (e: ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setFilter(value);
     }
