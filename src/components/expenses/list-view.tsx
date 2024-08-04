@@ -3,7 +3,7 @@ import { Column } from 'primereact/column'
 import { EXPENSES_TABLE_COLUMNS } from '../../consts/config/expenses';
 import { generateRandomKey } from '../../utils';
 import { LocalExpense } from '../../types/expenses';
-import { ChangeEvent, ChangeEventHandler, useState } from 'react';
+import { ChangeEvent, useState } from 'react';
 import { InputText } from 'primereact/inputtext';
 import { InputIcon } from 'primereact/inputicon';
 import { Button } from 'primereact/button';
