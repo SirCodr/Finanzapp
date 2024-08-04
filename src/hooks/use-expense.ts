@@ -9,7 +9,7 @@ import { fetchAllExpenseCategories, postExpenseCategories } from "../services/ex
 import { fetchAllExpenseSubCategories } from "../services/expenses/sub_categories"
 import { fetchAllPaymentMethods, postPaymentMethods } from "../services/payment-methods"
 import { toast } from "sonner"
-import { getFormattedExpensesforUpload, isLocalExpense } from "../utils/expenses"
+import { getFormattedExpensesforUpload } from "../utils/expenses"
 import { DEFAULT_SERVER_EXPENSE } from "../consts"
 
 const useExpense = () => {
