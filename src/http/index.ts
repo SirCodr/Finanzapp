@@ -1,7 +1,9 @@
-import axios from "axios";
-console.log(import.meta.env);
+import axios, { AxiosResponse } from 'axios'
+
 const http = axios.create({
-  baseURL: import.meta.env.DEV ? 'http://localhost:3000/' : 'https://finanzapp-api.vercel.app/',
+  baseURL: import.meta.env.DEV
+    ? 'http://localhost:3000/'
+    : 'https://finanzapp-api-production.up.railway.app/',
   headers: {
     'Content-Type': 'application/json'
   }
