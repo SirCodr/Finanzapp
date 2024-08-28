@@ -5,9 +5,9 @@ import {
   FileUploadSelectEvent} from 'primereact/fileupload'
 import { ProgressBar } from 'primereact/progressbar'
 import { Tooltip } from 'primereact/tooltip'
-import * as XLSX from 'xlsx'
 import { toast } from 'sonner'
 import { ProgressSpinner } from 'primereact/progressspinner'
+import csv from 'csvtojson'
 
 interface Props {
   extensionsAccepted: string
@@ -29,31 +29,37 @@ export default function UploadFile(props: Props) {
   const fileUploadRef = useRef<FileUpload>(null)
   
   async function handleFileUpload(e: FileUploadSelectEvent) {
-    const file = e.files[0];
-    const reader = new FileReader();
+  const file = e.files[0];
+  const reader = new FileReader();
 
-    reader.onload = async (event) => {
-      try {
-        setLoading(true)
-        const workbook = XLSX.read(event.target?.result, { type: 'binary' });
-        const sheetName = workbook.SheetNames[0];
-        const sheet = workbook.Sheets[sheetName];
-        const data = XLSX.utils.sheet_to_json<unknown[]>(sheet, { header: 1 });
-        const filledData = data.filter((item: unknown[]) => item.length)
-        setSheetData(filledData.slice(1))
-        
-        if (props.onLoad) await props.onLoad(data)
-      } catch (error) {
-        if (error instanceof Error) toast.error(error.message)
-        console.error(error)
-        setSheetData([])
-      } finally {
-        setLoading(false)
+  reader.onload = async (event) => {
+    try {
+      setLoading(true);
+
+      const fileContent = event.target?.result;
+      if (typeof fileContent !== 'string') {
+        throw new Error('Invalid file content');
       }
-    };
 
-    reader.readAsBinaryString(file);
-  }
+      const data = await csv({ output: 'csv' }).fromString(fileContent);
+
+      setSheetData(data);
+
+      if (props.onLoad) await props.onLoad(data);
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
+      console.error(error);
+      setSheetData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  reader.readAsText(file);
+}
+
 
   function onTemplateSelect(e: FileUploadSelectEvent) {
     const files = e.files

@@ -1,7 +1,5 @@
-export interface httpResponse<K> {
-  error: null
-  data: K
-  count: null
-  status: number
-  statusText: string
+export interface httpResponse<T> {
+  success: boolean;
+  message: string;
+  data: T;
 }

@@ -23,9 +23,9 @@ const useExpense = () => {
     queryKey: ['expenses'],
     queryFn: fetchAllExpensesFromServer,
     enabled: false,
-    onSuccess: (data: httpResponse<LocalExpense[]>) => {
-      if (data) {
-        const formattedData = snakeArrayToCamel(data.data)
+    onSuccess: (res: httpResponse<LocalExpense[]>) => {
+      if (res.data) {
+        const formattedData = snakeArrayToCamel(res.data)
         setLocalExpenses(formattedData)
       }
     }
@@ -87,6 +87,9 @@ const useExpense = () => {
           paymentMethod: expense[5] as string,
           price: expense[6] as string
       }
+
+      if (!rawExpense.category || !rawExpense.paymentMethod || !rawExpense.price || !rawExpense.date) throw Error('Campo invalido')
+
       const formattedExpenseFound = getFormattedExpensesforUpload({
         rawExpense,
         serverCategories: categories.data,
