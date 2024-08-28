@@ -11,7 +11,7 @@ export async function fetchAllExpensesFromServer(): Promise<httpResponse<LocalEx
 
 
 export async function postExpenses(expenses: ServerExpense[]) {
-  return await new HttpAdapter().post('upload-expenses', expenses)
+  return await new HttpAdapter().post('expenses', expenses)
 }
 
 export async function fetchAllCreationDataRequiredFromServer(): Promise<httpResponse<ExpenseCreationDataRequired>> {
