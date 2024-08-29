@@ -153,7 +153,7 @@ const SheetForm = () => {
         columns={columns}
         createRow={() => DEFAULT_SERVER_EXPENSE}
       />
-      <Button label='Create' onClick={() => createExpenses(data)} type='button' severity='success' disabled={isLoading} loading={isLoading} className='mt-8' />
+      <Button label='Crear' onClick={() => createExpenses(data)} type='button' severity='success' disabled={isLoading} loading={isLoading} className='mt-8' />
     </div>
   )
 }

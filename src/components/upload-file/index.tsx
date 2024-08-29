@@ -161,7 +161,7 @@ export default function UploadFile(props: Props) {
           style={{ fontSize: '1.2em', color: 'var(--text-color-secondary)' }}
           className='my-5'
         >
-          Drag and Drop Image Here
+          Arrastra y suelta la imagen aquí
         </span>
       </div>
     )
@@ -187,9 +187,9 @@ export default function UploadFile(props: Props) {
 
   return (
     <div>
-      <Tooltip target='.custom-choose-btn' content='Choose' position='bottom' />
-      <Tooltip target='.custom-upload-btn' content='Upload' position='bottom' />
-      <Tooltip target='.custom-cancel-btn' content='Clear' position='bottom' />
+      <Tooltip target='.custom-choose-btn' content='Elegir' position='bottom' />
+      <Tooltip target='.custom-upload-btn' content='Subir' position='bottom' />
+      <Tooltip target='.custom-cancel-btn' content='Cancelar' position='bottom' />
 
       <FileUpload
         ref={fileUploadRef}
