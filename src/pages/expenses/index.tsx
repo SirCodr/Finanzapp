@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
-import ExpensesListView from '../../components/expenses/list-view';
 import useExpense from '../../hooks/use-expense';
+import ListView from '../../components/list-view';
+import { EXPENSES_TABLE_COLUMNS } from '../../consts/config/expenses';
 
 function ExpensesPage() {
   const { isLoading, fetchAllExpenses, localExpenses } = useExpense()
@@ -11,7 +12,7 @@ function ExpensesPage() {
 
   return (
     <div>
-      <ExpensesListView items={localExpenses} isLoading={isLoading} />
+      <ListView columns={EXPENSES_TABLE_COLUMNS} items={localExpenses} isLoading={isLoading} />
     </div>
   )
 }
