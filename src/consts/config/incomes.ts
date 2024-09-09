@@ -8,17 +8,17 @@ export const INCOMES_TABLE_COLUMNS: ColumnProps[] = [
     sortable: true
   },
   {
-    field: 'category_id',
+    field: 'category',
     header: 'Categoria',
     sortable: true
   },
   {
-    field: 'sub_category_id',
+    field: 'subCategory',
     header: 'Sub categoria',
     sortable: true
   },
   {
-    field: 'payment_account_id',
+    field: 'paymentAccount',
     header: 'Metodo de pago',
     sortable: true
   },

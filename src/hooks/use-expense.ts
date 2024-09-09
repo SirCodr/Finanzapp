@@ -4,7 +4,6 @@ import { fetchAllCreationDataRequiredFromServer, fetchAllExpensesFromServer, pos
 import useExpensesStore from "../store/expenses"
 import { useMutation, useQuery } from "react-query"
 import { httpResponse } from "../types/http"
-import { snakeArrayToCamel } from "../utils"
 import { fetchAllExpenseCategories, postExpenseCategories } from "../services/expenses/categories"
 import { fetchAllExpenseSubCategories } from "../services/expenses/sub_categories"
 import { fetchAllPaymentMethods, postPaymentMethods } from "../services/payment-methods"
@@ -25,8 +24,7 @@ const useExpense = () => {
     enabled: false,
     onSuccess: (res: httpResponse<LocalExpense[]>) => {
       if (res.data) {
-        const formattedData = snakeArrayToCamel(res.data)
-        setLocalExpenses(formattedData)
+        setLocalExpenses(res.data)
       }
     }
   })
