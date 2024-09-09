@@ -6,38 +6,13 @@ import { ServerExpense } from '../../types/expenses'
 import { Dropdown } from 'primereact/dropdown'
 import { DEFAULT_SERVER_EXPENSE } from '../../consts'
 import useExpense from '../../hooks/use-expense'
-import {  } from 'react-datasheet-grid/dist/types'
+import { Cell } from 'react-datasheet-grid/dist/types'
 import { ProgressSpinner } from 'primereact/progressspinner'
 import { Button } from 'primereact/button'
 import { InputNumber } from 'primereact/inputnumber'
 import { Chips } from 'primereact/chips'
 import { toast } from 'sonner'
-
-const NumberComponent = (props: CellProps<ServerExpense, null>) => {
-  const ref = useRef<HTMLInputElement>(null)
-
-  useEffect(() => {
-    if (props.active || props.focus) ref.current?.focus()
-  }, [props.active, props.focus])
-
-  return (
-    <InputNumber
-      inputRef={ref}
-      value={Number(props.rowData.price)}
-      name='price'
-      placeholder='Price'
-      locale='en-US'
-      prefix='$'
-      autoFocus={props.active}
-      onChange={(e) =>
-        props.setRowData({
-          ...props.rowData,
-          price: e.value?.toString() ?? ''
-        })
-      }
-    />
-  )
-}
+import CustomInputNumber from '../sheet-grid/custom-input-number'
 
 const ChipsComponent = (props: CellProps<ServerExpense, null>) => {
   const ref = useRef<HTMLInputElement>(null)
@@ -123,7 +98,12 @@ const SheetForm = () => {
       {
         ...keyColumn,
         title: 'Valor',
-        component: NumberComponent
+        component: (props: CellProps<ServerExpense, null>) => (
+          <CustomInputNumber<ServerExpense>
+            {...props}
+            name='price'
+          />
+        )
       },
       {
         ...keyColumn('date', isoDateColumn),
