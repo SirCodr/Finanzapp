@@ -34,16 +34,16 @@ const ItemMultilevel = ({ item }: Props) => {
           >
             <path
               stroke='currentColor'
-              stroke-linecap='round'
-              stroke-linejoin='round'
-              stroke-width='2'
+              strokeLinecap='round'
+              strokeLinejoin='round'
+              strokeWidth='2'
               d='m1 1 4 4 4-4'
             />
           </svg>
         </summary>
         <ul id='dropdown-example' className='py-2 space-y-2'>
-          {item.children?.map((child) => (
-            <li>
+          {item.children?.map((child, index) => (
+            <li key={child.name + index}>
               <a
                 href={child.path}
                 className='flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700'
