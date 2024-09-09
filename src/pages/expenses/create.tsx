@@ -1,4 +1,3 @@
-import Layout from "../../components/layout"
 import SheetForm from "../../components/expenses/sheet-form"
 import { useEffect } from "react"
 
@@ -9,9 +8,7 @@ function ExpensesCreatePage() {
   }, [])
 
   return (
-    <Layout>
-      <SheetForm />
-    </Layout>
+    <SheetForm />
   )
 }
 

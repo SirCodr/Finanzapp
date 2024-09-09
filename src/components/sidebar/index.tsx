@@ -7,7 +7,7 @@ const Sidebar = () => {
     <>
       <aside
         id='sidebar-multi-level-sidebar'
-        className='fixed top-0 left-0 z-40 w-64 h-screen transition-transform'
+        className='sticky top-0 w-full h-screen transition-transform'
         aria-label='Sidebar'
       >
         <div className='h-auto px-3 py-4 overflow-y-auto bg-gray-50 dark:bg-gray-800'>
