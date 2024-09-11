@@ -18,10 +18,8 @@ export async function fetchAllIncomeCreationOptions() {
   const paymentAccounts = await fetchAllPaymentAccounts().then(res => res.data)
 
   return {
-    count: null,
-    error: null,
-    status: 200,
-    statusText: 'Okay',
+    success: true,
+    message: 'Okay',
     data: {
       categories,
       subCategories,
