@@ -11,14 +11,14 @@ export interface LocalExpense {
 }
 
 export interface ServerExpense {
-  category_id: number | null;
-  created_at?: string;
+  categoryId: number | null;
+  createdAt?: string;
   date: string |null; 
   id?: number;
   description: string | null;
-  payment_method_id: number;
+  paymentMethodId: number;
   price: string;
-  sub_category_id: number | null;
+  subCategoryId: number | null;
   tags: string[];
 }
 

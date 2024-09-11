@@ -38,10 +38,10 @@ export function getFormattedExpensesforUpload({
     return {
       date: rawExpense.date,
       description: rawExpense.description,
-      category_id: categoryMatch.id,
-      sub_category_id: subCategoryMatch?.id || null,
+      categoryId: categoryMatch.id,
+      subCategoryId: subCategoryMatch?.id || null,
       tags: rawExpense.tags,
-      payment_method_id: paymentMethodMatch.id,
+      paymentMethodId: paymentMethodMatch.id,
       price: rawExpense.price
     }
 }

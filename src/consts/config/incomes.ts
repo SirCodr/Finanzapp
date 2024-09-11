@@ -1,7 +1,7 @@
 import { ColumnProps } from "primereact/column";
 import { formatCurrency } from "../../utils/currency";
 
-export const EXPENSES_TABLE_COLUMNS: ColumnProps[] = [
+export const INCOMES_TABLE_COLUMNS: ColumnProps[] = [
   {
     field: 'date',
     header: 'Fecha',
@@ -18,14 +18,14 @@ export const EXPENSES_TABLE_COLUMNS: ColumnProps[] = [
     sortable: true
   },
   {
-    field: 'paymentMethod',
+    field: 'paymentAccount',
     header: 'Metodo de pago',
     sortable: true
   },
   {
-    field: 'price',
+    field: 'amount',
     header: 'Precio',
-    body: ({ price }: { price: string | number }) => formatCurrency(price),
+    body: ({ amount }: { amount: string | number }) => formatCurrency(amount),
     sortable: true
   }
 ]

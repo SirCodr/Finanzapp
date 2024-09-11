@@ -1,29 +1,34 @@
 import { useEffect, useMemo, useState } from 'react'
 import { CellProps, Column, isoDateColumn, keyColumn, textColumn } from 'react-datasheet-grid'
 import 'react-datasheet-grid/dist/style.css'
-import { ServerExpense } from '../../types/expenses'
 import { Dropdown } from 'primereact/dropdown'
-import { DEFAULT_SERVER_EXPENSE } from '../../consts'
-import useExpense from '../../hooks/use-expense'
+import { DEFAULT_SERVER_INCOME } from '../../consts'
 import { ProgressSpinner } from 'primereact/progressspinner'
 import { Button } from 'primereact/button'
 import { toast } from 'sonner'
 import SheetGrid from '../../components/sheet-grid'
 import CustomInputNumber from '../../components/sheet-grid/custom-input-number'
-import CustomChips from '../../components/sheet-grid/custom-chips'
+import { ServerIncome } from '../../types/income'
+import { useMutation, useQuery } from 'react-query'
+import { createIncomes, fetchAllIncomeCreationOptions } from '../../services/incomes'
 
-const ExpensesCreatePage = () => {
-  const { fetchAllCreationDataRequired, createExpenses, creationDataRequired, isLoading, isSuccess } = useExpense()
-  const [data, setData] = useState<ServerExpense[]>([DEFAULT_SERVER_EXPENSE])
+const IncomesCreatePage = () => {
+  const createIncomeMutation = useMutation(createIncomes)
+  const incomeCreationOptionsQuery = useQuery({
+    queryKey: 'income-creation-options',
+    queryFn: fetchAllIncomeCreationOptions,
+    enabled: false
+  })
+  const [data, setData] = useState<ServerIncome[]>([DEFAULT_SERVER_INCOME])
 
-  const columns = useMemo<Column<ServerExpense>[]>(() => {
+  const columns = useMemo<Column<ServerIncome>[]>(() => {
     return [
       {
         ...keyColumn,
         title: 'Categoria',
-        component: (props: CellProps<ServerExpense, null>) => (
+        component: (props: CellProps<ServerIncome, null>) => (
           <Dropdown
-            options={creationDataRequired?.categories}
+            options={incomeCreationOptionsQuery.data?.data.categories}
             value={props.rowData.categoryId}
             optionLabel='name'
             optionValue='id'
@@ -36,9 +41,9 @@ const ExpensesCreatePage = () => {
       {
         ...keyColumn,
         title: 'Sub categoria',
-        component: (props: CellProps<ServerExpense, null>) => (
+        component: (props: CellProps<ServerIncome, null>) => (
           <Dropdown
-            options={creationDataRequired?.subCategories}
+            options={incomeCreationOptionsQuery.data?.data.subCategories}
             value={props.rowData.subCategoryId}
             optionLabel='name'
             optionValue='id'
@@ -54,25 +59,15 @@ const ExpensesCreatePage = () => {
       },
       {
         ...keyColumn,
-        title: 'Etiquetas',
-        component: (props: CellProps<ServerExpense, null>) => (
-          <CustomChips<ServerExpense>
-            {...props}
-            name='tags'
-          />
-        )
-      },
-      {
-        ...keyColumn,
-        title: 'Metodo de pago',
-        component: (props: CellProps<ServerExpense, null>) => (
+        title: 'Cuenta destino',
+        component: (props: CellProps<ServerIncome, null>) => (
           <Dropdown
-            options={creationDataRequired?.paymentMethods}
-            value={props.rowData.paymentMethodId}
+            options={incomeCreationOptionsQuery.data?.data.paymentAccounts}
+            value={props.rowData.paymentAccountId}
             optionLabel='name'
             optionValue='id'
             onChange={(e) =>
-              props.setRowData({ ...props.rowData, paymentMethodId: e.value })
+              props.setRowData({ ...props.rowData, paymentAccountId: e.value })
             }
           />
         )
@@ -80,10 +75,10 @@ const ExpensesCreatePage = () => {
       {
         ...keyColumn,
         title: 'Valor',
-        component: (props: CellProps<ServerExpense, null>) => (
-          <CustomInputNumber<ServerExpense>
+        component: (props: CellProps<ServerIncome, null>) => (
+          <CustomInputNumber<ServerIncome>
             {...props}
-            name='price'
+            name='amount'
           />
         )
       },
@@ -92,36 +87,35 @@ const ExpensesCreatePage = () => {
         title: 'Fecha'
       }
     ]
-  }, [creationDataRequired])
+  }, [incomeCreationOptionsQuery.data])
 
    useEffect(() => {
       document.addEventListener('contextmenu', event => event.preventDefault());
-
-      fetchAllCreationDataRequired()
+      incomeCreationOptionsQuery.refetch()
 
       return(() => document.removeEventListener('contextmenu', event => event.preventDefault()))
   }, [])
 
   useEffect(() => {
-    if (isSuccess) {
-      setData([DEFAULT_SERVER_EXPENSE])
+    if (createIncomeMutation.isSuccess) {
+      setData([DEFAULT_SERVER_INCOME])
       toast.success('Datos creados exitosamente')
     }
-  }, [isSuccess])
+  }, [createIncomeMutation.isSuccess])
 
-  if (isLoading) return <ProgressSpinner style={{ width: '50px', height: '50px' }} strokeWidth="8" fill="var(--surface-ground)" animationDuration=".5s" />
+  if (incomeCreationOptionsQuery.isLoading) return <ProgressSpinner style={{ width: '50px', height: '50px' }} strokeWidth="8" fill="var(--surface-ground)" animationDuration=".5s" />
 
   return (
     <div className='w-full'>
-      <SheetGrid<ServerExpense>
+      <SheetGrid<ServerIncome>
         value={data}
         onChange={setData}
         columns={columns}
-        createRow={() => DEFAULT_SERVER_EXPENSE}
+        createRow={() => DEFAULT_SERVER_INCOME}
       />
-      <Button label='Crear' onClick={() => createExpenses(data)} type='button' severity='success' disabled={isLoading} loading={isLoading} className='mt-8' />
+      <Button label='Crear' onClick={() => createIncomeMutation.mutate(data)} type='button' severity='success' disabled={createIncomeMutation.isLoading} loading={createIncomeMutation.isLoading} className='mt-8' />
     </div>
   )
 }
 
-export default ExpensesCreatePage
+export default IncomesCreatePage

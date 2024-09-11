@@ -4,7 +4,6 @@ import { fetchAllCreationDataRequiredFromServer, fetchAllExpensesFromServer, pos
 import useExpensesStore from "../store/expenses"
 import { useMutation, useQuery } from "react-query"
 import { httpResponse } from "../types/http"
-import { snakeArrayToCamel } from "../utils"
 import { fetchAllExpenseCategories, postExpenseCategories } from "../services/expenses/categories"
 import { fetchAllExpenseSubCategories } from "../services/expenses/sub_categories"
 import { fetchAllPaymentMethods, postPaymentMethods } from "../services/payment-methods"
@@ -25,8 +24,7 @@ const useExpense = () => {
     enabled: false,
     onSuccess: (res: httpResponse<LocalExpense[]>) => {
       if (res.data) {
-        const formattedData = snakeArrayToCamel(res.data)
-        setLocalExpenses(formattedData)
+        setLocalExpenses(res.data)
       }
     }
   })
@@ -101,15 +99,15 @@ const useExpense = () => {
         expensesDraft.push(formattedExpenseFound)
       }
 
-      if (!formattedExpenseFound?.category_id && !pendingCategories.has(rawExpense.category)) {
+      if (!formattedExpenseFound?.categoryId && !pendingCategories.has(rawExpense.category)) {
         pendingCategories.add(rawExpense.category)
       }
 
-      if (!formattedExpenseFound?.payment_method_id && !pendingPaymentMethods.has(rawExpense.paymentMethod)) {
+      if (!formattedExpenseFound?.paymentMethodId && !pendingPaymentMethods.has(rawExpense.paymentMethod)) {
         pendingPaymentMethods.add(rawExpense.paymentMethod)
       }
 
-      if (!formattedExpenseFound?.category_id || !formattedExpenseFound?.payment_method_id) {
+      if (!formattedExpenseFound?.categoryId || !formattedExpenseFound?.paymentMethodId) {
         pendingExpenses.push(rawExpense)
         continue
       }
@@ -137,11 +135,11 @@ const useExpense = () => {
 
       expensesDraft.push({
         date: expense.date,
-        category_id: categoryMatch.id,
-        sub_category_id: subCategoryMatch?.id || null,
+        categoryId: categoryMatch.id,
+        subCategoryId: subCategoryMatch?.id || null,
         description: expense.description,
         tags: expense.tags,
-        payment_method_id: paymentMethodMatch.id,
+        paymentMethodId: paymentMethodMatch.id,
         price: expense.price
       })
     }
