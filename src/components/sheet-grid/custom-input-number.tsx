@@ -25,7 +25,7 @@ const CustomInputNumber = <T,> (props: Props<T>) => {
       onChange={(e) =>
         props.setRowData({
           ...props.rowData,
-          price: e.value?.toString() ?? ''
+          [props.name]: e.value?.toString() ?? ''
         })
       }
     />
