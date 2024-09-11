@@ -20,10 +20,8 @@ export async function fetchAllCreationDataRequiredFromServer(): Promise<httpResp
   const paymentMethods = await fetchAllPaymentMethods().then(res => res.data)
 
   return {
-    count: null,
-    error: null,
-    status: 200,
-    statusText: 'Okay',
+    success: true,
+    message: 'Ok',
     data: {
       categories,
       subCategories,
