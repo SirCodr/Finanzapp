@@ -15,6 +15,11 @@ export const SIDEBAR_ITEMS: SideBarItem[] = [
         name: 'upload',
         label: 'Subir',
         path: '/incomes/upload'
+      },
+      {
+        name: 'create',
+        label: 'Crear',
+        path: '/incomes/create'
       }
     ]
   },

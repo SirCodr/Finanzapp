@@ -1,12 +1,22 @@
 import { ServerExpense } from "../types/expenses";
+import { ServerIncome } from "../types/income";
 import { getCurrentIsoDate } from "../utils/date";
 
 export const DEFAULT_SERVER_EXPENSE: ServerExpense = {
-  category_id: null,
+  categoryId: null,
   date: getCurrentIsoDate(),
-  payment_method_id: 0,
+  paymentMethodId: 0,
   price: '',
   description: '',
-  sub_category_id: null,
+  subCategoryId: null,
   tags: []
+}
+
+export const DEFAULT_SERVER_INCOME: ServerIncome = {
+  categoryId: null,
+  date: getCurrentIsoDate(),
+  paymentAccountId: 0,
+  amount: '',
+  description: '',
+  subCategoryId: null
 }
